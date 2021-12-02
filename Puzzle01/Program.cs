@@ -16,8 +16,9 @@ namespace MyApp // Note: actual namespace depends on the project name.
             using (StreamReader file = new(filePath))
                 while (!file.EndOfStream)
                 {
-                    string line = file.ReadLine();
-                    sonarData.Add(int.Parse(line));
+                    string? line = file.ReadLine();
+                    if (line != null)
+                        sonarData.Add(int.Parse(line));
                 }
 
             int nLargerMeasurment = GetDepthIncreases(sonarData);
