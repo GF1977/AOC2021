@@ -21,17 +21,12 @@ namespace MyApp // Note: actual namespace depends on the project name.
                         inputData.Add(line);
                 }
 
-            int nGammaRate;
-            int nEpsilonRate;
-            
             int nLenOfDiagnosticString = inputData.First().Length;
 
-            nGammaRate = GetGammaRate(inputData, nLenOfDiagnosticString);
-            nEpsilonRate = GetEpsilonRate(nGammaRate, nLenOfDiagnosticString);
+            int nGammaRate = GetGammaRate(inputData, nLenOfDiagnosticString);
+            int nEpsilonRate = GetEpsilonRate(nGammaRate, nLenOfDiagnosticString);
 
-            Console.WriteLine("Gamma rate  : {0}", nGammaRate);
-            Console.WriteLine("Epsilon rate: {0}", nEpsilonRate);
-            Console.WriteLine("Result      : {0}", nGammaRate * nEpsilonRate);
+            Console.WriteLine("Gamma rate: {0}    Epsilon rate: {1}    Result: {2}", nGammaRate, nEpsilonRate, nGammaRate * nEpsilonRate);
         }
         static int GetEpsilonRate(int nGammaRate, int nLenOfDiagnosticString)
         {
