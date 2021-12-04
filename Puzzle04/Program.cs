@@ -31,52 +31,57 @@ namespace MyApp // Note: actual namespace depends on the project name.
         private bool setWin {  set { bWin = true; } }
         public int GetId { get { return instanceId; } }
         public static int CardSize { get { return CARD_SIZE; } }
-        public int CheckRows()
+        public int CheckRows(int r)
         {
-            int res;
-            for (int r = 0; r < CARD_SIZE; r++)
-            {
-                res = 0;
-                for (int c = 0; c < CARD_SIZE; c++)
-                    if (CardChecks[r, c] == true)
-                        res++;
+            int res = 0;
+            for (int c = 0; c < CARD_SIZE; c++)
+                if (CardChecks[r, c] == true)
+                    res++;
 
-                if (res == CARD_SIZE)
+            if (res == CARD_SIZE)
                 {
                     setWin = true;
                     return r;
                 }
-            }
+            
             return -1;
         }
 
-        public int CheckColumns()
+        public int CheckColumns(int c)
         {
-            int res;
-            for (int c = 0; c < CARD_SIZE; c++)
-            {
-                res = 0;
-                for (int r = 0; r < CARD_SIZE; r++)
-                    if (CardChecks[r, c] == true)
-                        res++;
+            int res = 0;
+            for (int r = 0; r < CARD_SIZE; r++)
+                if (CardChecks[r, c] == true)
+                    res++;
 
                 if (res == CARD_SIZE)
                 {
                     setWin = true;
                     return c;
                 }
-            }
+
             return -1;
         }
 
-        public void MarkNumer(int nDrawNumber)
+        public bool MarkNumer(int nDrawNumber)
         {
             for (int r = 0; r < CARD_SIZE; r++)
                 for (int c = 0; c < CARD_SIZE; c++)
                 {
                     if (CardNumbers[r, c] == nDrawNumber)
+                    { 
                         CardChecks[r, c] = true;
+                        int nWinnerRow = CheckRows(r);
+                        int nWinnerCol = CheckColumns(c);
+
+                        if (nWinnerRow >= 0 || nWinnerCol >= 0)
+                            return true;
+                        else
+                            return false;
+                    }
                 }
+
+            return false;
         }
 
         public int GetSumOfUnmarkedNumbers()
@@ -95,7 +100,7 @@ namespace MyApp // Note: actual namespace depends on the project name.
     }
     public class Program
     {
-        // Answer for Data_p.txt  Part 1: 25023     Part 2: 
+        // Answer for Data_p.txt  Part 1: 25023     Part 2: 2634
         static readonly string filePath = @".\..\..\..\Data_p.txt";
         static int[] nDrawNumbers;
         static List<BingoCard> BingoCardsList = new List<BingoCard>();
@@ -126,11 +131,11 @@ namespace MyApp // Note: actual namespace depends on the project name.
                         if (bingoCard.Winner)
                             continue;
 
-                        bingoCard.MarkNumer(num);
-                        int nWinnerRow = bingoCard.CheckRows();
-                        int nWinnerCol = bingoCard.CheckColumns();
+                        bool Winner = bingoCard.MarkNumer(num);
+                        //int nWinnerRow = bingoCard.CheckRows();
+                        //int nWinnerCol = bingoCard.CheckColumns();
 
-                        if(nWinnerRow >= 0 || nWinnerCol >= 0)
+                        if(Winner)
                             {
                                 int nSumm = bingoCard.GetSumOfUnmarkedNumbers();
                                 // Showing the first card and the last card
