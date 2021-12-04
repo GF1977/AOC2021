@@ -7,76 +7,70 @@ namespace MyApp // Note: actual namespace depends on the project name.
 {
     public class Program
     {
-        static string filePath = @".\..\..\..\Data_p.txt";
+        // Answers for Data_p   : 2250414, 6085575
+        static readonly string filePath = @".\..\..\..\Data_p.txt";
         static int nLenOfDiagnosticString;
 
         public static void Main(string[] args)
         {
-            List<string> inputData = new();
-
+            // parsing the input file
+            List<string> InputData = new();
             using (StreamReader file = new(filePath))
                 while (!file.EndOfStream)
                 {
                     string? line = file.ReadLine();
                     if (line != null)
-                        inputData.Add(line);
+                        InputData.Add(line);
                 }
 
-            nLenOfDiagnosticString = inputData.First().Length;
+            nLenOfDiagnosticString = InputData.First().Length;
 
             // Part One
-            string sGammaRate = GetGammaEpsilonRate(inputData, "Gamma");
-            int nGammaRate = Convert.ToInt32(sGammaRate,2);
+            GetGammaEpsilonRate(InputData, out string sGammaRate, out string sEpsilonRate);
 
-            string sEpsilonRate = GetGammaEpsilonRate(inputData, "Epsilon");
+            int nGammaRate   = Convert.ToInt32(sGammaRate,2);
             int nEpsilonRate = Convert.ToInt32(sEpsilonRate, 2);
 
             Console.WriteLine("Gamma rate: {0}    Epsilon rate: {1}    Result: {2}", nGammaRate, nEpsilonRate, nGammaRate * nEpsilonRate);
 
             // Part Two
-            string sOxygenRate = GetOxygenCO2Rating(inputData, sGammaRate, "Oxygen");
-            int nOxygenRate = Convert.ToInt32(sOxygenRate, 2);
-
-            string sCO2ScrubberRate = GetOxygenCO2Rating(inputData, sEpsilonRate, "CO2");
-            int nCO2ScrubberRate = Convert.ToInt32(sCO2ScrubberRate, 2);
+            int nOxygenRate      = GetOxygenCO2Rating(InputData, "Oxygen");
+            int nCO2ScrubberRate = GetOxygenCO2Rating(InputData, "CO2");
 
             Console.WriteLine("Oxygen rate: {0}    CO2 scrubber rate: {1}    Result: {2}", nOxygenRate, nCO2ScrubberRate, nOxygenRate * nCO2ScrubberRate);
         }
-        static string GetGammaEpsilonRate(List<string> InputData, string sIdentificator)
+
+        static void GetGammaEpsilonRate(List<string> InputData, out string sGammaRate, out string sEpsilonRate)
         {
-            int[] GammaRateArray = new int[nLenOfDiagnosticString];
+            sGammaRate = "";
+            sEpsilonRate = "";
+            int[] RateArray = new int[nLenOfDiagnosticString];
 
             foreach (string s in InputData)
                 for (int i = 0; i<nLenOfDiagnosticString; i++)
                 {
-                    if (s[i]=='0')
-                        GammaRateArray[i] -= 1;
+                    if (s[i] == '0')
+                        RateArray[i] -= 1;
                     else
-                        GammaRateArray[i] += 1;
+                        RateArray[i] += 1;
                 }
 
-            string sResult = "";
-            for (int i = 0; i<nLenOfDiagnosticString; i++)
+            for (int i = 0; i < nLenOfDiagnosticString; i++)
             {
-                if (sIdentificator == "Gamma")
+                if (RateArray[i] >= 0)
                 {
-                    if (GammaRateArray[i] >= 0)
-                        sResult += "1";
-                    else
-                        sResult += "0";
+                    sGammaRate += "1";
+                    sEpsilonRate += "0";
                 }
-                if (sIdentificator == "Epsilon")
-                {
-                    if (GammaRateArray[i] >= 0)
-                        sResult += "0";
-                    else
-                        sResult += "1";
+                if (RateArray[i] < 0)
+                { 
+                    sGammaRate += "0";
+                    sEpsilonRate += "1";
                 }
             }
-            return sResult;
         }
 
-        static string GetOxygenCO2Rating(List<string> InputData, string sConsideredRate, string sIdentificator)
+        static int  GetOxygenCO2Rating(List<string> InputData, string sIdentificator)
         {
             List<string> FilteredInput = new List<string>();
             List<string> InputDataCopy = new List<string>();
@@ -86,12 +80,15 @@ namespace MyApp // Note: actual namespace depends on the project name.
 
             for (int i = 0; i < nLenOfDiagnosticString; i++)
             {
+                GetGammaEpsilonRate(InputDataCopy, out string sGammaRate, out string sEpsilonRate);
+
+                FilteredInput.Clear();
                 foreach (string s in InputDataCopy)
                 {
-                    if (s[i] == sConsideredRate[i])
-                    {
+                    if (sIdentificator == "Oxygen" && s[i] == sGammaRate[i])
                         FilteredInput.Add(s);
-                    }
+                    if (sIdentificator == "CO2"    && s[i] == sEpsilonRate[i])
+                        FilteredInput.Add(s);
                 }
 
                 InputDataCopy.Clear();
@@ -100,19 +97,8 @@ namespace MyApp // Note: actual namespace depends on the project name.
 
                 if (InputDataCopy.Count == 1)
                     break;
-
-                if (sIdentificator == "Oxygen")
-                    sConsideredRate = GetGammaEpsilonRate(FilteredInput, "Gamma");
-
-                if (sIdentificator == "CO2")
-                    sConsideredRate = GetGammaEpsilonRate(FilteredInput, "Epsilon");
-
-
-                FilteredInput.Clear();
-
             }
-
-            return InputDataCopy.First();
+            return Convert.ToInt32(InputDataCopy.First(),2);
         }
     }
 }
