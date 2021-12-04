@@ -8,12 +8,18 @@ namespace MyApp // Note: actual namespace depends on the project name.
      public  class BingoCard
     {
         const int CARD_SIZE = 5;
-        public static int CardSize { get { return CARD_SIZE; } } 
+        
+        private static int instanceCounter;
+        private readonly int instanceId;
+        private bool bWin;
+
         private readonly int[,] CardNumbers = new int[CARD_SIZE, CARD_SIZE];
         private readonly bool[,] CardChecks = new bool[CARD_SIZE, CARD_SIZE];
 
         public BingoCard(int[,] CardData)
         {
+            this.instanceId = ++instanceCounter;
+            this.bWin = false;
             for (int r = 0; r < CARD_SIZE; r++)
                 for (int c = 0; c < CARD_SIZE; c++)
                 {
@@ -21,7 +27,10 @@ namespace MyApp // Note: actual namespace depends on the project name.
                     CardChecks[r, c] = false;
                 }
         }
-
+        public bool Winner { get { return bWin; } }
+        private bool setWin {  set { bWin = true; } }
+        public int GetId { get { return instanceId; } }
+        public static int CardSize { get { return CARD_SIZE; } }
         public int CheckRows()
         {
             int res;
@@ -33,7 +42,10 @@ namespace MyApp // Note: actual namespace depends on the project name.
                         res++;
 
                 if (res == CARD_SIZE)
+                {
+                    setWin = true;
                     return r;
+                }
             }
             return -1;
         }
@@ -49,7 +61,10 @@ namespace MyApp // Note: actual namespace depends on the project name.
                         res++;
 
                 if (res == CARD_SIZE)
+                {
+                    setWin = true;
                     return c;
+                }
             }
             return -1;
         }
@@ -104,9 +119,13 @@ namespace MyApp // Note: actual namespace depends on the project name.
             InputData.Add("");
             CreateBingoCards(InputData);
 
+            int nBingoCardId = 0;
             foreach(int num in nDrawNumbers)
                 foreach(BingoCard bingoCard in BingoCardsList)
                     {
+                        if (bingoCard.Winner)
+                            continue;
+
                         bingoCard.MarkNumer(num);
                         int nWinnerRow = bingoCard.CheckRows();
                         int nWinnerCol = bingoCard.CheckColumns();
@@ -114,8 +133,11 @@ namespace MyApp // Note: actual namespace depends on the project name.
                         if(nWinnerRow >= 0 || nWinnerCol >= 0)
                             {
                                 int nSumm = bingoCard.GetSumOfUnmarkedNumbers();
-                                Console.WriteLine("Bingo! Summ = {0}    Last Num = {1}   Answer = {2}", nSumm, num, nSumm * num);
-                                return;
+                                // Showing the first card and the last card
+                                if(nBingoCardId == 0 || nBingoCardId == BingoCardsList.Count - 1)
+                                    Console.WriteLine("Bingo! Card Id: {3,4:0}   Summ: {0,4:0}    Last Num: {1,2:0}   Answer: {2,8:0}", nSumm, num, nSumm * num, bingoCard.GetId);
+
+                                nBingoCardId++;
                             }        
                     }
 
