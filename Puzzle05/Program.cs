@@ -36,7 +36,7 @@ namespace MyApp // Note: actual namespace depends on the project name.
     {
         const int ARRAY_SIZE = 1000;
         // Answers for Data_p.txt  Part 1: 5585     Part 2: 17193
-        static readonly string filePath = @".\..\..\..\Data_t.txt";
+        static readonly string filePath = @".\..\..\..\Data_p.txt";
 
         public static List<Segment> segments = new List<Segment>();
         public static int[,] data = new int[ARRAY_SIZE, ARRAY_SIZE];
@@ -67,15 +67,13 @@ namespace MyApp // Note: actual namespace depends on the project name.
             foreach (Segment seg in segments)
             {
                 if(seg.sType == "h")
-                {
                     for (int x = Min(seg.Start.X, seg.End.X); x <= Max(seg.Start.X, seg.End.X); x++)
                         data[x, seg.Start.Y]++;
-                }
+
                 if (seg.sType == "v")
-                {
                     for (int y = Min(seg.Start.Y, seg.End.Y); y <= Max(seg.Start.Y, seg.End.Y); y++)
                         data[seg.Start.X,y]++;
-                }
+                
                 if (seg.sType == "d" && nPart == 2)
                 {
                     int deltaX = -1, deltaY = -1;
