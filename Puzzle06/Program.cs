@@ -23,6 +23,7 @@ namespace MyApp // Note: actual namespace depends on the project name.
         }
 
         // Key of the puzzle - the growth of population is not expanential but  binomial expansion growth 
+        // Pascal's triangle is the best way to represent that
         private static BigInteger PascalTriangle(int nRow, int nPosition)
         {
             // according to the theorem:
@@ -30,38 +31,37 @@ namespace MyApp // Note: actual namespace depends on the project name.
             return Factorial(nRow)/(Factorial(nPosition)*Factorial(nRow-nPosition));
         }
 
+        // We create the triangle of generations, each element in triangle is associated with the value on thes same position within Pascal's triangle
+        // sum of the elements is the answer
         private static BigInteger GetFishNumbers(int nIterations, int nInitialN)
         {
-            BigInteger nRes = 0;
-            int nTRow = 0;
-            int nTPos = 0;
+            BigInteger nRes = 0; 
+            int nTRow = 0; // row in the triangle
+            int nTPos = 0; // position in the row
 
-            int nCurrentN = nInitialN;
-            nIterations--;
-            nInitialN +=1;
-            
-            int nCount = 0;
+            int N = nInitialN; // N value in the triangle
 
-            while(nCurrentN <= nIterations)
+            while(N < nIterations)
             {
-                while(nCurrentN <= nIterations)
+                while (N < nIterations)
                 {
                     nRes += PascalTriangle(nTRow, nTPos);
                     nTRow++;
-                    nCurrentN += 7;
+                    N += 7;
                 }
-                nCount++;
-                nTRow = nCount;
                 nTPos++;
-                nCurrentN = (nInitialN - 1) + 9 * nCount;
+                nTRow = nTPos;
+
+                N = (nInitialN) + 9 * nTPos;
             }
 
             return nRes + 1;
         }
+
         // Associative: Total population of fishes = sum of every fish population
         // Population(a,b) = Population(a) + Population(b)
-        // Solution get the count of each fish and summarize the population multiplied by count
-        // Population(a,a,a,a,b,b) = 4*Population(a) + 2 * Population(b)
+        // Solution: 
+        // Population(a,a,a,a,b,b) = 4 * Population(a) + 2 * Population(b)
         private static BigInteger SolveThePuzzle(int nIterations)
         {
             Dictionary<int, int> PopulationByGroups = new Dictionary<int, int>();
