@@ -1,8 +1,4 @@
-﻿// Susing System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using static System.Math;
+﻿using System.Numerics;
 
 namespace MyApp // Note: actual namespace depends on the project name.
 {
@@ -11,40 +7,38 @@ namespace MyApp // Note: actual namespace depends on the project name.
         // Answers for Data_p.txt  Part 1: 372300     Part 2: 1675781200288
         static readonly string filePath = @".\..\..\..\Data_p.txt";
         static List<int> Fish = new List<int>();
-        static int nInitialFishCount;
         public static void Main(string[] args)
         {
-            // 1675781200245 too low
-            // 1675781200288
-            // 1675781200295 too high
-
-            nInitialFishCount = ParsingInputData();
+            ParsingInputData();
             Console.WriteLine("Part one: {0, 6:0}", SolveThePuzzle(80));
             Console.WriteLine("Part one: {0, 6:0}", SolveThePuzzle(256));
         }
         private static BigInteger Factorial(Int64 n)
         {
             BigInteger res = 1;
-            for (int i = 1; i <= n; i++)
+            for (int i = 1; i <= n; i++) 
                 res *= i;
+            
             return res;
         }
 
+        // Key of the puzzle - the growth of population is not expanential but  binomial expansion growth 
         private static BigInteger PascalTriangle(int nRow, int nPosition)
         {
+            // according to the theorem:
+            // n! / (k! * ( n - k)!)
             return Factorial(nRow)/(Factorial(nPosition)*Factorial(nRow-nPosition));
         }
 
-        private static BigInteger GetFishNumbersMath(int nIterations, int nInitialN)
+        private static BigInteger GetFishNumbers(int nIterations, int nInitialN)
         {
+            BigInteger nRes = 0;
             int nTRow = 0;
             int nTPos = 0;
 
             int nCurrentN = nInitialN;
             nIterations--;
             nInitialN +=1;
-
-            BigInteger nRes = 0;
             
             int nCount = 0;
 
@@ -52,7 +46,6 @@ namespace MyApp // Note: actual namespace depends on the project name.
             {
                 while(nCurrentN <= nIterations)
                 {
-                    //Console.WriteLine("Row: {0}    Pos: {1}    Value: {2}    Triangle: {3}", nTRow, nTPos, nCurrentN, PascalTriangle(nTRow, nTPos));
                     nRes += PascalTriangle(nTRow, nTPos);
                     nTRow++;
                     nCurrentN += 7;
@@ -63,73 +56,32 @@ namespace MyApp // Note: actual namespace depends on the project name.
                 nCurrentN = (nInitialN - 1) + 9 * nCount;
             }
 
-
-            //if (nInitialN == 2)
-              //  nRes--;
-
             return nRes + 1;
         }
+        // Associative: Total population of fishes = sum of every fish population
+        // Population(a,b) = Population(a) + Population(b)
+        // Solution get the count of each fish and summarize the population multiplied by count
+        // Population(a,a,a,a,b,b) = 4*Population(a) + 2 * Population(b)
         private static BigInteger SolveThePuzzle(int nIterations)
         {
-            ParsingInputData();
             Dictionary<int, int> PopulationByGroups = new Dictionary<int, int>();
-            foreach(int group in Fish)
+            foreach(int nAge in Fish)
             {
-                if (PopulationByGroups.TryAdd(group, 1) == false)
-                    PopulationByGroups[group]++;
+                if (PopulationByGroups.TryAdd(nAge, 1) == false)
+                    PopulationByGroups[nAge]++;
             }
-
 
             BigInteger res = 0;
             foreach(int nAge in PopulationByGroups.Keys)
             {
-                ParsingInputData();
-                res += PopulationByGroups[nAge] * GetFishNumbersMath(nIterations, nAge);
+                res += PopulationByGroups[nAge] * GetFishNumbers(nIterations, nAge);
             }
 
             return res;
         }
 
-        // nAge - by default this method return the result for all fishes in the input.
-        // if nAge specified ( >= 0) it will return the result for single parent fish
-        private static int GetFishNumbersX(int nIteration, int nAge = -1)
+        private static void ParsingInputData()
         {
-            List<int> FishTemp = new List<int>();
-            List<int> FishNewPopulation = new List<int>();
-
-            if (nAge >= 0)
-            {
-                Fish.Clear();
-                Fish.Add(nAge);
-            }
-
-            for (int i = 0; i < nIteration; i++)
-            {
-                FishTemp.Clear();
-                FishNewPopulation.Clear();
-                
-                foreach(int f in Fish)
-                {
-                    if(f == 0)
-                    {
-                        FishTemp.Add(6);
-                        FishNewPopulation.Add(8);
-                    }
-                    else
-                        FishTemp.Add(f-1);
-                }
-                Fish.Clear();
-                Fish.AddRange(FishTemp);
-                Fish.AddRange(FishNewPopulation);
-            }
-
-            int res = Fish.Count;
-            return res;
-        }
-
-        private static int ParsingInputData()
-        {
-            Fish.Clear();
             List<string> InputData = new();
             using (StreamReader file = new(filePath))
                 { 
@@ -139,8 +91,6 @@ namespace MyApp // Note: actual namespace depends on the project name.
                     foreach(string s in parts)
                         Fish.Add(int.Parse(s));
                 }
-
-            return Fish.Count;
         }
     }
 }
