@@ -1,12 +1,11 @@
-using System.Numerics;
 
-namespace MyApp // Note: actual namespace depends on the project name.
+namespace MyApp
 {
     public class Program
     {
-        // Answers for Data_p.txt  Part 1: 372300     Part 2: 1675781200288
+        // Answers for Data_p.txt  Part 1:      Part 2: 
         static readonly string filePath = @".\..\..\..\Data_p.txt";
-        static List<int> Fish = new List<int>();
+        static List<int> InputData = new List<int>();
         public static void Main(string[] args)
         {
             ParsingInputData();
@@ -17,14 +16,13 @@ namespace MyApp // Note: actual namespace depends on the project name.
 
         private static void ParsingInputData()
         {
-            List<string> InputData = new();
             using (StreamReader file = new(filePath))
             {
                 string line = file.ReadLine();
                 string[] parts = line.Split(",");
 
                 foreach (string s in parts)
-                    Fish.Add(int.Parse(s));
+                    InputData.Add(int.Parse(s));
             }
         }
     }
