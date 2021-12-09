@@ -11,7 +11,7 @@ namespace MyApp // Note: actual namespace depends on the project name.
         {
             ParsingInputData();
             Console.WriteLine("Part one: {0, 6:0}", SolveThePuzzle(80));
-            Console.WriteLine("Part one: {0, 6:0}", SolveThePuzzle(256));
+            Console.WriteLine("Part one: {0, 6:0}", SolveThePuzzle(2560));
         }
         private static BigInteger Factorial(Int64 n)
         {
