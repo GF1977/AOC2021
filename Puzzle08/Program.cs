@@ -10,73 +10,41 @@ namespace MyApp
         public static void Main(string[] args)
         {
             ParsingInputData();
-            int nRes = 0;
+
+            int nResOne = 0;
             foreach (string input in InputData)
-            {
-                string[] sParts = input.Split(" | ");
+                nResOne += SolveThePuzzle(input, 1);
 
-                nRes += SolveThePuzzle1(sParts);
-            }
 
-            Console.WriteLine("Part one: {0, 6:0}", 0);
-            Console.WriteLine("Part one: {0, 6:0}", nRes);
+            int nResTwo = 0;
+            foreach (string input in InputData)
+                nResTwo += SolveThePuzzle(input, 2);
+
+            Console.WriteLine("Part One: {0, 10:0}", nResOne);
+            Console.WriteLine("Part Two: {0, 10:0}", nResTwo);
         }
 
-        private static int SolveThePuzzle1(string[] parts)
+        private static int SolveThePuzzle(string Input, int nPuzzlePart)
         {
+            string[] parts = Input.Split(" | ");
 
             string[] USP = parts[0].Split(" ");
             string[] DOV = parts[1].Split(" ");
 
-            int nRes = 0;
-
             string[] sN = new string[10];
 
-            foreach (string s in USP)
-            {
-                if (s.Length == 2)
-                {
-                    sN[1] = s;
-                }
-                if (s.Length == 4)
-                {
-                    sN[4] = s;
-                }
-                if (s.Length == 3)
-                {
-                    sN[7] = s;
-                }
-                if (s.Length == 7)
-                {
-                    sN[8] = s;
-                }
-            }
-
-            foreach (string s in USP)
-            {
-                int n = GetStringDiff(sN[1], s).Length;
-                if (s.Length == 6 &&  n == 6)
-                {
-                    sN[6] = s;
-                }
-            }
-
-            foreach (string s in USP)
-            {
-                if (s.Length == 5 && GetStringDiff(sN[6], s).Length == 1)
-                {
-                    sN[5] = s;
-                }
-                if (s.Length == 5 && GetStringDiff(sN[1], s).Length == 3)
-                {
-                    sN[3] = s;
-                }
-            }
+            sN[1] = USP.First(s => s.Length == 2);
+            sN[3] = USP.First(s => s.Length == 5 && GetStringDiff(sN[1], s).Length == 3);
+            sN[4] = USP.First(s => s.Length == 4);
+            sN[6] = USP.First(s => s.Length == 6 && GetStringDiff(sN[1], s).Length == 6);
+            sN[5] = USP.First(s => s.Length == 5 && GetStringDiff(sN[6], s).Length == 1);
+            sN[7] = USP.First(s => s.Length == 3);
+            sN[8] = USP.First(s => s.Length == 7);
 
 
             string sA = GetStringDiff(sN[7], sN[1]);
             string sC = GetStringDiff(sN[8], sN[6]);
-            string sE = GetStringDiff(sN[6], sN[5]);
+            string sE = GetStringDiff(GetStringDiff(sN[8], sN[5]), sC);
             string sB = GetStringDiff(GetStringDiff(sN[3], sN[8]), sE);
             string sF = GetStringDiff(sN[1], sC);
             string sD = GetStringDiff(GetStringDiff(sN[4], sN[1]), sB);
@@ -84,16 +52,19 @@ namespace MyApp
 
             string sDecode = sA + sB + sC + sD + sE + sF + sG;
 
-            
+
+            int nResOne = 0;
+            int nResTwo = 0;
             foreach (string s in DOV)
             {
-                //Console.WriteLine("{0} = {1}", s, GetDigital(s, sDecode));
+                int n = GetDigital(s, sDecode);
+                if (n == 1 || n == 4 || n == 7 || n == 8)
+                    nResOne++;
 
-                nRes = nRes * 10 + GetDigital(s, sDecode);
+                nResTwo = nResTwo * 10 + n;
             }
-                
 
-            return nRes;
+            return (nPuzzlePart == 1) ? nResOne : nResTwo;
         }
 
         private static string GetStringDiff(string a, string b)
