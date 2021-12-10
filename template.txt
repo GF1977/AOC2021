@@ -17,6 +17,7 @@ namespace MyApp
         private static void ParsingInputData()
         {
             using (StreamReader file = new(filePath))
+            while (!file.EndOfStream)
             {
                 string line = file.ReadLine();
                 string[] parts = line.Split(",");
