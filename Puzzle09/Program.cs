@@ -6,10 +6,10 @@
         static readonly string filePath = @".\..\..\..\Data_p.txt";
         static List<string> InputData = new List<string>();
         static int[,] Map;
-        static int nX, nY;
+        static int nX, nY; // size of the Array 
         public static void Main(string[] args)
         {
-            ParsingInputData();
+            ParsingInputData(out nX, out nY);
 
             int nRiskLevel, nTop3Bassins;
             SolvePuzzle(out nRiskLevel, out nTop3Bassins);
@@ -38,7 +38,7 @@
 
         public static bool isValidCoordinates(int x, int y)
         {
-            return  (x >=0 && y >= 0 && x < nX && y < nY) ?  true : false;
+            return  (x >= 0 && y >= 0 && x < nX && y < nY) ?  true : false;
         }
 
         private static int GetBasinSize(int x, int y)
@@ -70,7 +70,7 @@
             return true;
         }
 
-        private static void ParsingInputData()
+        private static void ParsingInputData(out int globalX, out int globalY)
         {
             using (StreamReader file = new(filePath))
                 while (!file.EndOfStream)
@@ -79,17 +79,15 @@
                     InputData.Add(line);
                 }
 
-            nX = InputData.Count;
-            nY = InputData.First().Length; 
+            globalX = InputData.Count;
+            globalY = InputData.First().Length; 
 
             Map = new int[nX,nY];
             int x = 0;
             foreach (string line in InputData)
             {
                 for (int i = 0; i < nY; i++)
-                {
                     Map[x, i] = int.Parse(line[i].ToString());
-                }
                 x++;
             }
         }
