@@ -9,24 +9,26 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Puzzle02", "Puzzle02\Puzzle
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Puzzle03", "Puzzle03\Puzzle03.csproj", "{47E23CC0-B392-4252-89F9-C8728A242E0A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Puzzle04", "Puzzle04\Puzzle04.csproj", "{7E15BCB2-25BF-460D-903F-A4AB693B0E8D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Puzzle04", "Puzzle04\Puzzle04.csproj", "{7E15BCB2-25BF-460D-903F-A4AB693B0E8D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Puzzle05", "Puzzle05\Puzzle05.csproj", "{B9F8002E-A764-4D98-8631-1EDE6C888DB0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Puzzle05", "Puzzle05\Puzzle05.csproj", "{B9F8002E-A764-4D98-8631-1EDE6C888DB0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Puzzle06", "Puzzle06\Puzzle06.csproj", "{D83DA172-E31B-46A0-B149-85978A816C99}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Puzzle06", "Puzzle06\Puzzle06.csproj", "{D83DA172-E31B-46A0-B149-85978A816C99}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Puzzle07", "Puzzle07\Puzzle07.csproj", "{147CE297-EB14-48DF-84EE-CFD4A9ADF705}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Puzzle07", "Puzzle07\Puzzle07.csproj", "{147CE297-EB14-48DF-84EE-CFD4A9ADF705}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4400F2E8-BA62-47DA-8C9E-52D9D4CC9A5D}"
 	ProjectSection(SolutionItems) = preProject
 		template.txt = template.txt
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Puzzle08", "Puzzle08\Puzzle08.csproj", "{B4868836-C240-4467-9288-372C469816B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Puzzle08", "Puzzle08\Puzzle08.csproj", "{B4868836-C240-4467-9288-372C469816B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Puzzle09", "Puzzle09\Puzzle09.csproj", "{4A1D55C0-F7C0-4FC1-AF65-1618296327B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Puzzle09", "Puzzle09\Puzzle09.csproj", "{4A1D55C0-F7C0-4FC1-AF65-1618296327B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Puzzle10", "Puzzle10\Puzzle10.csproj", "{250D0C48-BB1C-4E5F-BEB7-4B59609AD035}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Puzzle10", "Puzzle10\Puzzle10.csproj", "{250D0C48-BB1C-4E5F-BEB7-4B59609AD035}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Puzzle11", "Puzzle11\Puzzle11.csproj", "{90644491-6CEE-47A1-9964-DC90CF9A998C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -74,6 +76,10 @@ Global
 		{250D0C48-BB1C-4E5F-BEB7-4B59609AD035}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{250D0C48-BB1C-4E5F-BEB7-4B59609AD035}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{250D0C48-BB1C-4E5F-BEB7-4B59609AD035}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90644491-6CEE-47A1-9964-DC90CF9A998C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90644491-6CEE-47A1-9964-DC90CF9A998C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90644491-6CEE-47A1-9964-DC90CF9A998C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90644491-6CEE-47A1-9964-DC90CF9A998C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
