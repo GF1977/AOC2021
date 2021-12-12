@@ -2,42 +2,58 @@
 {
     public class Program
     {
-        // Answers for Data_p.txt  Part 1: 294195      Part 2: 
+        // Answers for Data_p.txt  Part 1: 294195      Part 2: 3490802734
         static readonly string filePath = @".\..\..\..\Data_p.txt";
         static List<string> InputData = new List<string>();
-        static Dictionary<string, int> Scores = new Dictionary<string, int>();
-        
         public static void Main(string[] args)
         {
-            Scores.Add(")",     3); // )
-            Scores.Add("]",    57); // ]
-            Scores.Add("}",  1197); // }
-            Scores.Add(">", 25137); // >
+            Dictionary<string, int>  IllegalCharScores       = new Dictionary<string, int>() {{ ")", 3}, { "]", 57}, { "}", 1197}, { ">", 25137 }};
+            Dictionary<string, int>  AutoСompleteCharScores  = new Dictionary<string, int>() {{ ")", 1}, { "]",  2}, { "}",    3}, { ">",     4 }};
 
-
+            List<long> PartTwoResults = new List<long>();
             ParsingInputData();
-            int nRes = 0;
+
+            int nResOne = 0;
             foreach (string input in InputData)
             {
-
-                string s = input;
-                while (SimplifyCodeLine(s, out s));
+                string sSimplifiedInput = input;
+                while (SimplifyCodeLine(sSimplifiedInput, out sSimplifiedInput));
 
                 string sBrace;
-                if (GetIllegalChar(s, out sBrace))
+                if (GetIllegalChar(sSimplifiedInput, out sBrace))
+                    nResOne += IllegalCharScores[sBrace];
+                else
                 {
-                    Console.WriteLine("String: {0, 20:0}   Illegal char: {1}", s, sBrace);
-                    nRes += Scores[sBrace];
+                    long nResTwo = 0;
+                    string sMissedPart = AutoComplete(sSimplifiedInput);
+                    foreach (char brace in sMissedPart)
+                        nResTwo = nResTwo * 5 + AutoСompleteCharScores[brace.ToString()];
+
+                    PartTwoResults.Add(nResTwo);
                 }
-                //int n = GetIllegalBracer(input);
-                //if (Scores.ContainsKey(n))
-                    //nRes += Scores[n];
             }
+            PartTwoResults.Sort();
+            int n = (PartTwoResults.Count - 1) / 2;
 
-            Console.WriteLine("Part one: {0, 6:0}", nRes);
-            Console.WriteLine("Part one: {0, 6:0}", 2);
+            Console.WriteLine("Part one: {0, 10:0}", nResOne);
+            Console.WriteLine("Part one: {0, 10:0}", PartTwoResults[n]);
         }
+        private static string AutoComplete(string s)
+        {
+            string sEnd = "";
+            foreach (char c in s)
+                switch (c)
+                {
+                    case '(': sEnd = ")" + sEnd; break;
+                    case '[': sEnd = "]" + sEnd; break;
+                    case '{': sEnd = "}" + sEnd; break;
+                    case '<': sEnd = ">" + sEnd; break;
 
+                    default:
+                        break;
+                }
+            return sEnd;
+        }
         private static bool GetIllegalChar(string s, out string sRes)
         {
             string sOpening = "([{<";
@@ -45,18 +61,14 @@
             sRes = "";
             foreach (char op in sOpening)
                 foreach (char en in sEnding)
-                {
-                    string sCombination = op.ToString() + en.ToString();
-                    if (s.Contains(sCombination))
+                    if (s.Contains(op.ToString() + en.ToString()))
                     {
                         sRes = en.ToString();
                         return true;
                     }
-                }
 
             return false;
         }
-
         private static bool SimplifyCodeLine(string input, out string result)
         {
             bool res = false;
@@ -71,7 +83,6 @@
             result = input;
 
             return res;
-
         }
         private static void ParsingInputData()
         {
