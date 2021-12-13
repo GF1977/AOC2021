@@ -13,15 +13,23 @@ namespace MyApp
         public static void Main(string[] args)
         {
             ParsingInputData();
+            int nResOne = 0;
+            int nResTwo = 0;
 
-            for(int nStep = 0; nStep < 100; nStep++)
+            for (int nStep = 0; nStep < 100 || nResTwo == 0; nStep++)
             {
+                if (nStep == 100)
+                    nResOne = nFlashes;
+
+                if (CheckBigFlash() && nResTwo == 0)
+                    nResTwo = nStep;
+
                 IncreaseEnergyByOne();
                 InitiateFlash();
-                Console.WriteLine();
             }
-            Console.WriteLine("Part one: {0, 10:0}", nFlashes);
-            Console.WriteLine("Part one: {0, 10:0}", 2);
+
+            Console.WriteLine("Part one: {0, 10:0}", nResOne);
+            Console.WriteLine("Part one: {0, 10:0}", nResTwo);
         }
         private static void InitiateFlash()
         {
@@ -59,6 +67,17 @@ namespace MyApp
                 Console.WriteLine();
             }
         }
+
+        private static bool CheckBigFlash()
+        {
+            int n = 0;
+            for (int x = 0; x < X; x++)
+                for (int y = 0; y < Y; y++)
+                    if (OctopusMap[x, y] == 0) n++;
+
+            return n==100 ? true : false;
+        }
+
         private static void IncreaseEnergyByOne()
         {
             for (int x = 0; x < X; x++)
