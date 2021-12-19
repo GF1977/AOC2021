@@ -4,12 +4,14 @@
     {
         // Answers for Data_p.txt  Part 1:      Part 2: 
         static readonly string filePath = @".\..\..\..\Data_t.txt";
-        static List<int> InputData = new List<int>();
+        static List<string> InputData = new List<string>();
         public static void Main(string[] args)
         {
             ParsingInputData();
-            Console.WriteLine("Part one: {0, 10:0}", 1);
-            Console.WriteLine("Part one: {0, 10:0}", 2);
+
+            string res = Convert.ToString(Convert.ToInt64("1234567890ABCDEF", 16), 2);
+            Console.WriteLine("Part one: {0, 80:0}", res);
+            Console.WriteLine("Part one: {0, 80:0}", 2);
         }
 
 
@@ -19,10 +21,7 @@
                 while (!file.EndOfStream)
                 {
                     string line = file.ReadLine();
-                    string[] parts = line.Split(",");
-
-                    foreach (string s in parts)
-                        InputData.Add(int.Parse(s));
+                    InputData.Add(line);
                 }
         }
     }
