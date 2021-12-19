@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Threading.Tasks;
-namespace MyApp
+﻿namespace MyApp
 {
     public class Program
     {
@@ -17,26 +15,18 @@ namespace MyApp
         public static void Main(string[] args)
         {
             ParsingInputData();
-            //ShowMap();
-            int nRes = int.MaxValue;
 
-            int n = 40;
-            while (n>0)
+            // Recursive Wave function is too expensive, run it in iterations
+            int n = 10;
+            while (--n > 0)
             {
-                //ShowMap();
-                for(int x = 0; x < X; x++)
-                    for(int y = 0; y < Y; y++)
-                    {
+                for (int x = 0; x < X; x++)
+                    for (int y = 0; y < Y; y++)
                         Wave(x, y);
-                        //Map[n - i, i] = 0;
-                        //ShowMap();
-                        nRes = Map[X-1,Y-1] - Map[0,0];
-                    }
-                n--;
             }
 
+            int nRes = Map[X - 1, Y - 1] - Map[0, 0];
 
-            //ShowMap();
             Console.WriteLine("Part one: {0, 10:0}", nRes);
             Console.WriteLine("Part one: {0, 10:0}", 2);
         }
@@ -45,33 +35,22 @@ namespace MyApp
         {
             //ShowMap();
             VisitedMap[x, y] = true;
-            if (Map[x, y] > 2000) Map[x, y] = 2000;
-            
+
+            int[,] d = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 } };
+
             int nCost = Map[x, y];
 
-            
-
-            int[,] d = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 }};
-
             for (int i = 0; i < 4; i++)
-                if (isValidCoordinates(x + d[i, 0], y + d[i, 1]))
+            {
+                int nXnew = x + d[i, 0];
+                int nYnew = y + d[i, 1];
+                if (isValidCoordinates(nXnew, nYnew))
                 {
-                    if (VisitedMap[x + d[i, 0], y + d[i, 1]] == false)
-                    {
-                        Map[x + d[i, 0], y + d[i, 1]] += nCost;
-                        //Wave(x + d[i, 0], y + d[i, 1]);
-                    }
+                    if (VisitedMap[nXnew, nYnew] == false || InitialMap[nXnew, nYnew] + nCost < Map[nXnew, nYnew])
+                        Map[nXnew, nYnew] = InitialMap[nXnew, nYnew] + nCost;
 
-                    else
-                        if (InitialMap[x + d[i, 0], y + d[i, 1]] + nCost < Map[x + d[i, 0], y + d[i, 1]])
-                    {
-                        Map[x + d[i, 0], y + d[i, 1]] = InitialMap[x + d[i, 0], y + d[i, 1]] + nCost;
-                        //Wave(x + d[i, 0], y + d[i, 1]);
-                    }
-                   // if (VisitedMap[9, 9] == true)
-                      //break;
-                    //else
                 }
+            }
         }
 
 
@@ -87,7 +66,7 @@ namespace MyApp
                     foreach (char c in line)
                     {
                         InitialMap[x, y] = int.Parse(c.ToString());
-                        Map[x,y] = InitialMap[x, y];
+                        Map[x, y] = InitialMap[x, y];
                         x++;
                     }
                     y++;
@@ -102,10 +81,10 @@ namespace MyApp
                 for (int x = 0; x < X; x++)
                 {
                     Console.Write("{0, 4:0}", Map[x, y]);
-                    text+=Map[x, y].ToString()+"  ";
+                    text += Map[x, y].ToString() + "  ";
                 }
 
-                 Console.WriteLine();
+                Console.WriteLine();
                 //using StreamWriter file = new(@"e:\WriteLines2.txt", append: true);
                 //    file.WriteLineAsync(text);
                 Console.WriteLine();
