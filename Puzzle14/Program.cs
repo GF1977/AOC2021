@@ -6,26 +6,44 @@
         static readonly string filePath = @".\..\..\..\Data_t.txt";
         static string PTemplate;
         static Dictionary<string, char> Rules = new Dictionary<string,char>();
+        
         public static void Main(string[] args)
         {
+            Dictionary<char, long> Stats = new Dictionary<char, long>();
+
             ParsingInputData();
             string s = PTemplate;
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 14; i++)
             {
+                //if (s.Length > 100)
+                 //s = s.Substring(0, 100);
+                
                 s = EncodePolymer(s);
+                //Console.WriteLine(s);
             }
 
-            int nMax = 0;
-            int nMin = int.MaxValue;    
-            foreach(char value in Rules.Values.Distinct())
-            {
-                int n = s.Count(n => n == value);
-                if(n > nMax) nMax = n;
-                if(n < nMin) nMin = n;
-            }
+            long nRes = CollectStats(s, out Stats);
+            foreach(var k in Stats)
+                Console.WriteLine("Key: {0}     Value: {1, 10:0}",k.Key, k.Value);
 
-            Console.WriteLine("Part one: {0, 10:0}", nMax - nMin);
+            Console.WriteLine("Part one: {0, 10:0}", nRes);
             Console.WriteLine("Part one: {0, 10:0}", 2);
+        }
+
+        private static long CollectStats(string s, out Dictionary<char, long> stats)
+        {
+            stats = new Dictionary<char, long>();
+            long nMax = 0;
+            long nMin = int.MaxValue;
+            foreach (char value in Rules.Values.Distinct())
+            {
+                long n = s.Count(n => n == value);
+                stats.Add(value, n);
+                if (n > nMax) nMax = n;
+                if (n < nMin) nMin = n;
+            }
+
+            return nMax - nMin;
         }
 
         private static string EncodePolymer(string s)
