@@ -3,7 +3,7 @@
     public class Program
     {
         // Answers for Data_p.txt  Part 1:      Part 2: 
-        static readonly string filePath = @".\..\..\..\Data_t.txt";
+        static readonly string filePath = @".\..\..\..\Data_p.txt";
         static string PTemplate;
         static Dictionary<string, char> Rules = new Dictionary<string,char>();
         
@@ -13,7 +13,7 @@
 
             ParsingInputData();
             string s = PTemplate;
-            for (int i = 0; i < 14; i++)
+            for (int i = 0; i < 10; i++)
             {
                 //if (s.Length > 100)
                  //s = s.Substring(0, 100);
