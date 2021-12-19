@@ -3,12 +3,10 @@
     public class Program
     {
         // Answers for Data_p.txt  Part 1: 415     Part 2: 2864
-        static readonly string filePath = @".\..\..\..\Data_p.txt";
-        static List<int> InputData = new List<int>();
-
+        static readonly string filePath = @".\..\..\..\Data_t.txt";
         // !!! change the X & Y. for the test X=Y=10 , for prod X=Y=100
-        static int X = 100;
-        static int Y = 100;
+        static int X = 10;
+        static int Y = 10;
 
         static int[,] Map = new int[X, Y];
         static int[,] InitialMap = new int[X, Y];
@@ -23,8 +21,8 @@
         }
         private static int FindSafeRoute()
         {
-            // Recursive Wave function is too expensive, run it in iterations
-            int n = 10;
+            // Recursive Wave function is too expensive, run it in iterations (6 is enough for good result)
+            int n = 6;
             while (--n > 0)
                 for (int x = 0; x < X; x++)
                     for (int y = 0; y < Y; y++)
@@ -49,9 +47,7 @@
                     nRiskLevelDelta = y / nOldDimension + x / nOldDimension;
                     int nNewValue = InitialMap[x % nOldDimension, y % nOldDimension] + nRiskLevelDelta;
 
-                    if (nNewValue > 9)
-                        nNewValue = nNewValue % 9;
-                    
+                    nNewValue = (nNewValue > 9) ? nNewValue % 9 : nNewValue;
                     Map[x,y] = nNewValue;
                 }
 
@@ -70,7 +66,7 @@
             {
                 int nXnew = x + d[i, 0];
                 int nYnew = y + d[i, 1];
-                if (isValidCoordinates(nXnew, nYnew))
+                if (nXnew >= 0 && nYnew >= 0 && nXnew < X && nYnew < Y)
                     if (VisitedMap[nXnew, nYnew] == false || InitialMap[nXnew, nYnew] + nCost < Map[nXnew, nYnew])
                         Map[nXnew, nYnew] = InitialMap[nXnew, nYnew] + nCost;
             }
@@ -91,10 +87,6 @@
                     }
                     y++;
                 }
-        }
-        public static bool isValidCoordinates(int x, int y)
-        {
-            return (x >= 0 && y >= 0 && x < X && y < Y) ? true : false;
         }
     }
 }
