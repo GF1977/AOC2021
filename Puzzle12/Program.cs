@@ -15,8 +15,8 @@
     }
     public class Program
     {
-        // Answers for Data_p.txt  Part 1:      Part 2: 
-        static readonly string filePath = @".\..\..\..\Data_p.txt";
+        // Answers for Data_p.txt  Part 1: 5178      Part 2: 
+        static readonly string filePath = @".\..\..\..\Data_t.txt";
         static List<string> InputData = new List<string>();
         static List<string> Route = new List<string>();
         static Dictionary<string, Node> Nodes = new Dictionary<string, Node>();
@@ -28,31 +28,10 @@
 
             WalkEverywhere(nStart);
 
-            //bool bRes = WalkToExit(nStart);
-            //string sPath = "start";
-
-            //foreach (string s in Route)
-            //{
-            //    sPath += ", " + s;
-            //}
-
-
             int sRes = WalkEverywhere(nStart);
 
             Console.WriteLine("Part one: {0, 10:0}", sRes);
             Console.WriteLine("Part one: {0, 10:0}", 2);
-        }
-
-
-        private static int GetLeavesCount()
-        {
-            int nRes = 0;
-            foreach(var n in Nodes)
-            {
-                nRes+=n.Value.Leafs.Count;
-            }
-
-            return nRes;
         }
 
         private static int WalkEverywhere(Node NStart)
@@ -62,8 +41,6 @@
             List<string> Routes = new List<string>();
 
             queue.Add(NStart.Name);
-            //foreach(string s in queue)
-            //    queue2.Add(s);
 
             while(queue.Count > 0)
             {
@@ -94,39 +71,7 @@
                     queue.Add(s);
             }
 
-
-
-            foreach(string s in queue)
-            {
-                string[] points = s.Split(",");
-                if(points.First() == "start" && points.Last() == "end" && !Routes.Contains(s))
-                    Routes.Add(s);
-
-            }
-
             return Routes.Count;
-        }
-
-        private static bool WalkToExit(Node NStart)
-        {
-            if (NStart.Name == "end") return true;
-            //if (NStart.IsVisited) return false;
-
-            NStart.IsVisited = true;
-
-            foreach(string N in NStart.Leafs)
-            {
-                if(!Nodes[N].IsVisited)
-                {
-                    if (WalkToExit(Nodes[N]))
-                    {
-                        Route.Insert(0, N);
-                        return true;
-                    }
-                }
-            }
-
-            return false;
         }
 
         private static void GenerateGraph()
