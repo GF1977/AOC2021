@@ -3,43 +3,39 @@
     public class Node
     {
         public string Name { get; set; }
-        public int MaxVisits { get; set; }
-        public bool IsLarge { get; set; }
+        public bool IsSmall { get; set; }
         public List<string> Leafs { get; set; }
         public Node()
         {
             Leafs = new List<string>();
-            IsLarge = false;
+            IsSmall = true;
         }
     }
     public class Program
     {
-        // Answers for Data_p.txt  Part 1: 5178      Part 2: 
+        // Answers for Data_p.txt  Part 1: 5178      Part 2: 130094
         static readonly string filePath = @".\..\..\..\Data_p.txt";
         static List<string> InputData = new List<string>();
-        static List<string> Route = new List<string>();
         static Dictionary<string, Node> Nodes = new Dictionary<string, Node>();
         public static void Main(string[] args)
         {
             ParsingInputData();
             GenerateGraph();
-            Node nStart = Nodes["start"];
 
-            WalkEverywhere(nStart);
+            int nResOne = WalkEverywhere(1);
+            int nResTwo = WalkEverywhere(2);
 
-            int sRes = WalkEverywhere(nStart);
-
-            Console.WriteLine("Part one: {0, 10:0}", sRes);
-            Console.WriteLine("Part one: {0, 10:0}", 2);
+            Console.WriteLine("Part one: {0, 10:0}", nResOne);
+            Console.WriteLine("Part one: {0, 10:0}", nResTwo);
         }
 
-        private static int WalkEverywhere(Node NStart)
+        private static int WalkEverywhere(int PuzzlePart)
         {
             List<string> queueA = new List<string>();
             List<string> queueB = new List<string>();
             List<string> Routes = new List<string>();
 
-            queueA.Add(NStart.Name);
+            queueA.Add("start");
 
             while(queueA.Count > 0)
             {
@@ -49,8 +45,28 @@
 
                     foreach (string N in Nodes[Key].Leafs)
                     {
-                        if (!Nodes[N].IsLarge && path.Contains(N))
-                            continue;
+                        if(PuzzlePart == 1) // small caves can be visited only once
+                            if (Nodes[N].IsSmall && path.Contains(N))
+                                continue;
+
+                        if (PuzzlePart == 2) // small caves can be visited only twice
+                        {
+                            string[] hops = path.Split(",");
+
+                            bool bVisitedTwice = false;
+                            foreach(var Node in Nodes)
+                            {
+                                if (Node.Value.IsSmall && hops.Count(n => n == Node.Key) == 2 ) 
+                                    bVisitedTwice = true;
+                            }
+
+                            if (bVisitedTwice && Nodes[N].IsSmall && path.Contains(N))
+                              continue;
+
+
+                            if (N == "start" && path.Contains(N))
+                                continue;
+                        }
 
                         if (N == "end")
                             Routes.Add(path + "," + N);
@@ -65,7 +81,6 @@
 
                 queueB.Clear();
             }
-
             return Routes.Count;
         }
 
@@ -80,10 +95,10 @@
                     N.Name = parts[0];
                     N.Leafs.Add(parts[1]);
 
-                    if (Char.IsUpper(N.Name[0]))
-                        N.IsLarge = true;
+                    if (Char.IsLower(N.Name[0]))
+                        N.IsSmall = true;
                     else
-                        N.IsLarge = false;
+                        N.IsSmall = false;
 
 
                     Nodes.Add(N.Name, N);
@@ -98,13 +113,11 @@
                     N.Leafs.Add(parts[0]);
 
 
-                    if (Char.IsUpper(N.Name[0]))
-                        N.IsLarge = true;
+                    if (Char.IsLower(N.Name[0]))
+                        N.IsSmall = true;
                     else
-                    {
-                        N.IsLarge = false;
-                        N.MaxVisits = 2;
-                    }
+                        N.IsSmall = false;
+
 
                     Nodes.Add(N.Name, N);
                 }
