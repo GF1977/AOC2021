@@ -3,20 +3,19 @@
     public class Node
     {
         public string Name { get; set; }
-        public bool IsVisited { get; set; }
+        public int MaxVisits { get; set; }
         public bool IsLarge { get; set; }
         public List<string> Leafs { get; set; }
         public Node()
         {
             Leafs = new List<string>();
-            IsVisited = false;
             IsLarge = false;
         }
     }
     public class Program
     {
         // Answers for Data_p.txt  Part 1: 5178      Part 2: 
-        static readonly string filePath = @".\..\..\..\Data_t.txt";
+        static readonly string filePath = @".\..\..\..\Data_p.txt";
         static List<string> InputData = new List<string>();
         static List<string> Route = new List<string>();
         static Dictionary<string, Node> Nodes = new Dictionary<string, Node>();
@@ -36,39 +35,35 @@
 
         private static int WalkEverywhere(Node NStart)
         {
-            List<string> queue = new List<string>();
-            List<string> queue2 = new List<string>();
+            List<string> queueA = new List<string>();
+            List<string> queueB = new List<string>();
             List<string> Routes = new List<string>();
 
-            queue.Add(NStart.Name);
+            queueA.Add(NStart.Name);
 
-            while(queue.Count > 0)
+            while(queueA.Count > 0)
             {
-                queue2.Clear();
-                foreach (string path in queue)
+                foreach (string path in queueA)
                 {
-                    string[] Keys = path.Split(",");
-                    string Key = Keys.Last();
+                    string Key = path.Split(",").Last();
 
-                    Node kvp = Nodes[Key];
-                    foreach (string N in kvp.Leafs)
+                    foreach (string N in Nodes[Key].Leafs)
                     {
-                        
                         if (!Nodes[N].IsLarge && path.Contains(N))
                             continue;
 
-                        if(N != "start" && !path.Contains("end"))
-                            queue2.Add(path + "," + N);
-
-                        if(N == "end")
+                        if (N == "end")
                             Routes.Add(path + "," + N);
+                        else
+                            queueB.Add(path + "," + N);
                     }
-
-
                 }
-                queue.Clear();
-                foreach (string s in queue2)
-                    queue.Add(s);
+
+                queueA.Clear();
+                foreach (string s in queueB)
+                    queueA.Add(s);
+
+                queueB.Clear();
             }
 
             return Routes.Count;
@@ -106,7 +101,10 @@
                     if (Char.IsUpper(N.Name[0]))
                         N.IsLarge = true;
                     else
+                    {
                         N.IsLarge = false;
+                        N.MaxVisits = 2;
+                    }
 
                     Nodes.Add(N.Name, N);
                 }
