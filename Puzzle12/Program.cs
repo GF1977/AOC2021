@@ -14,7 +14,7 @@
     public class Program
     {
         // Answers for Data_p.txt  Part 1: 5178      Part 2: 130094
-        static readonly string filePath = @".\..\..\..\Data_p.txt";
+        static readonly string filePath = @".\..\..\..\Data_t.txt";
         static List<string> InputData = new List<string>();
         static Dictionary<string, Node> Nodes = new Dictionary<string, Node>();
         public static void Main(string[] args)
@@ -45,7 +45,10 @@
 
                     foreach (string N in Nodes[Key].Leafs)
                     {
-                        if(PuzzlePart == 1) // small caves can be visited only once
+                        if (N == "start")
+                            continue;
+
+                        if (PuzzlePart == 1) // small caves can be visited only once
                             if (Nodes[N].IsSmall && path.Contains(N))
                                 continue;
 
@@ -62,10 +65,6 @@
 
                             if (bVisitedTwice && Nodes[N].IsSmall && path.Contains(N))
                               continue;
-
-
-                            if (N == "start" && path.Contains(N))
-                                continue;
                         }
 
                         if (N == "end")
