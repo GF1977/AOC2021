@@ -6,7 +6,7 @@
         static readonly string filePath = @".\..\..\..\Data_t.txt";
         static Dictionary<string, char> Rules = new Dictionary<string,char>();
         static Dictionary<string, long> TemplateStats = new Dictionary<string, long>();
-        static Dictionary<char, long> StatsFinal = new Dictionary<char, long>();
+        static Dictionary<string, long> StatsFinal = new Dictionary<string, long>();
         public static void Main(string[] args)
         {
             ParsingInputData();
@@ -16,105 +16,71 @@
             Console.WriteLine("Part one: {0, 20:0}", nResOne);
             Console.WriteLine("Part two: {0, 20:0}", nResTwo);
         }
-
+        private static void AddValue(Dictionary<string, long> D, string key, long value)
+        {
+            if (D.ContainsKey(key))
+                D[key] += value;
+            else
+                D.Add(key, value);
+        }
         private static long CollectStats(Dictionary<string, long> Res)
         {
+            StatsFinal.Clear();
             foreach (var kvp in Res)
             {
-                char c = kvp.Key[0];
-
-                if (StatsFinal.ContainsKey(c))
-                    StatsFinal[c] += kvp.Value;
-                else
-                    StatsFinal.Add(c, kvp.Value);
-
-                c = kvp.Key[1];
-
-                if (StatsFinal.ContainsKey(c))
-                    StatsFinal[c] += kvp.Value;
-                else
-                    StatsFinal.Add(c, kvp.Value);
+                AddValue(StatsFinal, kvp.Key[0].ToString(), kvp.Value);
+                AddValue(StatsFinal, kvp.Key[1].ToString(), kvp.Value);
             }
-
-
-            long nMax = StatsFinal.Values.Max();
-            long nMin = StatsFinal.Values.Min();
-
-            return nMax - nMin;
+            return StatsFinal.Values.Max() - StatsFinal.Values.Min();
         }
-
-
         private static long EncodePolymer(int nSteps)
         {
             Dictionary<string, long> ResultTempA = new Dictionary<string, long>();
             Dictionary<string, long> ResultTempB = new Dictionary<string, long>();
 
-            foreach (var kvp in TemplateStats)
-                ResultTempA.Add(kvp.Key, kvp.Value);
+            foreach (var kvp in TemplateStats.Where(kvp=>kvp.Value > 0))
+                    ResultTempA.Add(kvp.Key, kvp.Value);
 
-            long nRes2Previous;
-            long nRes2 = 0;
-            long nRes2Final = 0;
+            long nRes = 0;
             for (int i = 0; i < nSteps; i++)
             {
                 ResultTempB.Clear();
                 foreach(KeyValuePair<string, long> pair in ResultTempA)
                 {
-                    if(pair.Value > 0)
-                    {
-                        char c = Rules[pair.Key];
-                        string Key1 = pair.Key[0].ToString() + c;
-                        string Key2 = c + pair.Key[1].ToString();
-                        if(ResultTempB.ContainsKey(Key1))
-                            ResultTempB[Key1]+= pair.Value;
-                        else
-                            ResultTempB.Add(Key1, pair.Value);
+                        string Key1 = pair.Key[0].ToString() + Rules[pair.Key];
+                        string Key2 = Rules[pair.Key] + pair.Key[1].ToString();
 
-                        if (ResultTempB.ContainsKey(Key2))
-                            ResultTempB[Key2]+=pair.Value;
-                        else
-                            ResultTempB.Add(Key2, pair.Value);
-                    }
+                        AddValue(ResultTempB, Key1, pair.Value);
+                        AddValue(ResultTempB, Key2, pair.Value);
                 }
-
                 ResultTempA.Clear();
                 foreach(var kvp in ResultTempB)
                     ResultTempA.Add(kvp.Key, kvp.Value);
-
-                nRes2Previous = nRes2;
-                nRes2 = CollectStats(ResultTempA);
-
-                 nRes2Final = (nRes2 - nRes2Previous + 1) / 2;
-
             }
 
-            return nRes2Final;
+            nRes = CollectStats(ResultTempA);
+            return (nRes + 1) / 2;
         }
-
-
         private static void ParsingInputData()
         {
-            string PTemplate;
+            string? PTemplate;
             using (StreamReader file = new(filePath))
             {
                 PTemplate = file.ReadLine();
                 file.ReadLine(); // Empty line
-
                 while (!file.EndOfStream)
                 {
-                    string line = file.ReadLine();
+                    string? line = file.ReadLine();
                     string[] parts = line.Split(" -> ");
                     Rules.Add(parts[0], parts[1][0]);
                     TemplateStats.Add(parts[0], 0);
                 }
             }
-
             for (int i = 0; i < PTemplate.Length - 1; i++)
             {
                 string Key = String.Concat(PTemplate[i], PTemplate[i + 1]);
                 TemplateStats[Key]++;
             }
-
         }
     }
 }
