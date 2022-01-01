@@ -15,7 +15,7 @@
 
         // Data
         string sLiteralData = String.Empty;
-        public long nLiteralData { get;  }
+        int nLiteralData = 0;
 
         // SubPackets
         List<Packet> SubPackets = new List<Packet>();
@@ -38,6 +38,7 @@
                 sLiteralData = input.Substring(6);
                 for(int i = 0; i < sLiteralData.Length; i+=5)
                 {
+                    nLiteralData = 0;
                     PacketSize += 5;
                     int nSizeOfSubstring = (sLiteralData.Length - i) >= 5 ? 5 : sLiteralData.Length - i;
 
@@ -51,6 +52,7 @@
                     if (s[0] == '0')
                         break;
                 }
+
             }
             else // Operator
             {
@@ -59,34 +61,33 @@
                 if (len_type_id == 0)
                 {
                     total_len = Convert.ToInt32(input.Substring(7, 15), 2);
-                    PacketSize = total_len;
-
-                    Console.WriteLine("  total_len: {0}", total_len);
+                    PacketSize = 22;
                     int n = 0;
+                    Console.WriteLine("  total_len: {0}", total_len);
                     while (n < total_len)
                     {
-                        Packet P = new Packet(input.Substring(22+n));
+                        Packet P = new Packet(input.Substring(n + 22));
                         SubPackets.Add(P);
-                        n += P.GetPacketSize();
+                        n += P.PacketSize;
+                        PacketSize += P.PacketSize;
                     }
-                    PacketSize = n;
+                    //PacketSize = n;
                     //PacketSize = this.GetPacketSize();
                 }
                 else
                 {
                     packet_count = Convert.ToInt32(input.Substring(7, 11), 2);
+                    PacketSize = 18;
                     Console.WriteLine("  packet_count: {0}", packet_count);
-                    int n = 0;
                     int p = 0;
                     while (p < packet_count)
                     {
-                        Packet P = new Packet(input.Substring(18 + n));
+                        Packet P = new Packet(input.Substring(PacketSize));
                         SubPackets.Add(P);
-                        n += P.GetPacketSize();
+                        PacketSize += P.GetPacketSize();
                         p++;
                     }
-                    PacketSize = n;
-                    //PacketSize = this.GetPacketSize();
+                    //PacketSize += this.GetPacketSize();
                 }
 
             }
@@ -108,6 +109,11 @@
         public int GetPacketSize()
         {
             int nPacketSize = this.PacketSize;
+            return nPacketSize;
+            if (len_type_id == 0)
+            {
+                return nPacketSize;
+            }
 
             foreach (Packet P in SubPackets)
             {
@@ -126,21 +132,22 @@
         public static void Main(string[] args)
         {
             Packet P;
-            //ParsingInputData("8A004A801A8002F478");
-            // P = new Packet(binaryInput);
-            //Console.WriteLine(P.GetVersionSum());
 
-            //ParsingInputData("620080001611562C8802118E34");
-            // P = new Packet(binaryInput);
-            //Console.WriteLine(P.GetVersionSum());
+            ParsingInputData("8A004A801A8002F478");
+            P = new Packet(binaryInput);
+            Console.WriteLine(" ---- Version Sum: {0} ----", P.GetVersionSum());
 
-            //ParsingInputData("C0015000016115A2E0802F182340");
-            // P = new Packet(binaryInput);
-            //Console.WriteLine(P.GetVersionSum());
+            ParsingInputData("620080001611562C8802118E34");
+            P = new Packet(binaryInput);
+            Console.WriteLine(" ---- Version Sum: {0} ----", P.GetVersionSum());
 
-            //ParsingInputData("A0016C880162017C3686B18A3D4780");
-            // P = new Packet(binaryInput);
-            //Console.WriteLine(P.GetVersionSum());
+            ParsingInputData("C0015000016115A2E0802F182340");
+            P = new Packet(binaryInput);
+            Console.WriteLine(" ---- Version Sum: {0} ----", P.GetVersionSum());
+
+            ParsingInputData("A0016C880162017C3686B18A3D4780");
+            P = new Packet(binaryInput);
+            Console.WriteLine(" ---- Version Sum: {0} ----", P.GetVersionSum());
 
 
             ParsingInputData();
@@ -165,11 +172,11 @@
             binaryInput = string.Empty;
            // Console.WriteLine("Hex Original {0}", InputData);
 
-            for (int i = 0; i < InputData.Length; i += 2)
+            for (int i = 0; i < InputData.Length; i ++)
             {
-                int nSizeOfSubstring = (InputData.Length - i) >= 2 ? 2 : 1;
-                string sHex8 = InputData.Substring(i, nSizeOfSubstring);
-                string sBin = Convert.ToString(Convert.ToInt64(sHex8, 16), 2).PadLeft(8, '0');
+                //int nSizeOfSubstring = (InputData.Length - i) >= 2 ? 2 : 1;
+                string sHex8 = InputData.Substring(i, 1);
+                string sBin = Convert.ToString(Convert.ToInt64(sHex8, 16), 2).PadLeft(4, '0');
                 binaryInput += sBin;
 
                // Console.WriteLine("Hex {0, 10:0}    Bin {1, 80:0}", sHex8, sBin);
