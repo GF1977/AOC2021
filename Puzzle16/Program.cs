@@ -22,10 +22,15 @@
 
         public Packet(string input)
         {
-            PacketSize = input.Length;
+            //PacketSize = input.Length;
 
             version = Convert.ToInt32(input.Substring(0, 3), 2);
             type_id = Convert.ToInt32(input.Substring(3, 3), 2);
+
+
+            Console.WriteLine("{");
+            Console.WriteLine("  Ver : {0}", version);
+            Console.WriteLine("  Type: {0}", type_id);
 
             if (type_id == 4) // Literal packet
             {
@@ -42,6 +47,7 @@
 
                     nLiteralData = nLiteralData * 16 + Convert.ToInt32(s.Substring(1,4), 2);
 
+                    Console.WriteLine("  nLiteralData: {0}", nLiteralData);
                     if (s[0] == '0')
                         break;
                 }
@@ -54,6 +60,8 @@
                 {
                     total_len = Convert.ToInt32(input.Substring(7, 15), 2);
                     PacketSize = total_len;
+
+                    Console.WriteLine("  total_len: {0}", total_len);
                     int n = 0;
                     while (n < total_len)
                     {
@@ -61,10 +69,13 @@
                         SubPackets.Add(P);
                         n += P.GetPacketSize();
                     }
+                    PacketSize = n;
+                    //PacketSize = this.GetPacketSize();
                 }
                 else
                 {
                     packet_count = Convert.ToInt32(input.Substring(7, 11), 2);
+                    Console.WriteLine("  packet_count: {0}", packet_count);
                     int n = 0;
                     int p = 0;
                     while (p < packet_count)
@@ -74,12 +85,12 @@
                         n += P.GetPacketSize();
                         p++;
                     }
-                    PacketSize = 0;
-                    PacketSize = this.GetPacketSize();
+                    PacketSize = n;
+                    //PacketSize = this.GetPacketSize();
                 }
 
             }
-
+            Console.WriteLine("}");
         }
 
         public int GetVersionSum()
@@ -110,25 +121,26 @@
     public class Program
     {
         // Answers for Data_p.txt  Part 1:      Part 2: 
-        static readonly string filePath = @".\..\..\..\Data_t.txt";
+        static readonly string filePath = @".\..\..\..\Data_p.txt";
         static string binaryInput = string.Empty;
         public static void Main(string[] args)
         {
-            ParsingInputData("8A004A801A8002F478");
-            Packet P = new Packet(binaryInput);
-            Console.WriteLine(P.GetVersionSum());
+            Packet P;
+            //ParsingInputData("8A004A801A8002F478");
+            // P = new Packet(binaryInput);
+            //Console.WriteLine(P.GetVersionSum());
 
-            ParsingInputData("620080001611562C8802118E34");
-             P = new Packet(binaryInput);
-            Console.WriteLine(P.GetVersionSum());
+            //ParsingInputData("620080001611562C8802118E34");
+            // P = new Packet(binaryInput);
+            //Console.WriteLine(P.GetVersionSum());
 
-            ParsingInputData("C0015000016115A2E0802F182340");
-             P = new Packet(binaryInput);
-            Console.WriteLine(P.GetVersionSum());
+            //ParsingInputData("C0015000016115A2E0802F182340");
+            // P = new Packet(binaryInput);
+            //Console.WriteLine(P.GetVersionSum());
 
-            ParsingInputData("A0016C880162017C3686B18A3D4780");
-             P = new Packet(binaryInput);
-            Console.WriteLine(P.GetVersionSum());
+            //ParsingInputData("A0016C880162017C3686B18A3D4780");
+            // P = new Packet(binaryInput);
+            //Console.WriteLine(P.GetVersionSum());
 
 
             ParsingInputData();
