@@ -1,4 +1,4 @@
-﻿namespace MyApp
+﻿namespace BITS_Decoder
 {
     public class Packet
     {
@@ -100,7 +100,7 @@
             Packet P = new Packet(binaryInput);
             Console.WriteLine(" ---- Version Sum: {0} ----", P.GetVersionSum());
         }
-        private static string ParsingInputData(string? sHexString = null)
+        public static string ParsingInputData(string? sHexString = null)
         {
             if (sHexString == null)
                 using (StreamReader file = new(filePath))
