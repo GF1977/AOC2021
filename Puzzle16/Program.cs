@@ -11,8 +11,16 @@
         const int PACKET_CNT_SIZE   = 11;
         const int LEN_TYPE_ID_SIZE  =  1;
 
-        // PACKETS IDs
-        const int TYPE_LITERAL = 4;
+        // PACKETS Type IDs
+        const int TYPE_SUM       = 0;
+        const int TYPE_PRODUCT   = 1;
+        const int TYPE_MINIMUM   = 2;
+        const int TYPE_MAXIMUM   = 3;
+        const int TYPE_LITERAL   = 4;
+        const int TYPE_GREATER   = 5;
+        const int TYPE_LESS      = 6;
+        const int TYPE_EQUAL     = 7;
+
 
         public int Pointer { get; }
         // Header
