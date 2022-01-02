@@ -21,17 +21,16 @@
         const int TYPE_LESS      = 6;
         const int TYPE_EQUAL     = 7;
 
-
-        public int Pointer { get; }
+        private int Pointer;
         // Header
-        public int version { get; }
-        int type_id;
-        int len_type_id     = -1;   // To indicate which subsequent binary data represents its sub-packets, an operator packet can use one of two modes
-        int total_len       = -1;   // len_type_id == 0 -> 15 bits are a number that represents the total length in bits of the sub-packets contained by this packet.
-        int packet_count    = -1;   // len_type_id == 1 -> 11 bits are a number that represents the number of sub-packets immediately contained by this packet.
+        private int version;
+        private int type_id;
+        private int len_type_id     = -1;   // To indicate which subsequent binary data represents its sub-packets, an operator packet can use one of two modes
+        private int total_len       = -1;   // len_type_id == 0 -> 15 bits are a number that represents the total length in bits of the sub-packets contained by this packet.
+        private int packet_count    = -1;   // len_type_id == 1 -> 11 bits are a number that represents the number of sub-packets immediately contained by this packet.
         // Data
-        string sLiteralData = String.Empty;
-        long lnLiteralData = 0;
+        private string sLiteralData = String.Empty;
+        private long lnLiteralData = 0;
         // SubPackets
         List<Packet> SubPackets = new List<Packet>();
         public Packet(string input)
@@ -94,65 +93,75 @@
         {
             long lRes = 0;
 
-            if (this.type_id == TYPE_SUM)
+            foreach (Packet P in SubPackets)
+                if (P.type_id != 4)
+                    P.lnLiteralData = P.ProcessPacket();
+
+            switch (this.type_id)
             {
-                foreach (Packet P in SubPackets)
-                    lRes += P.lnLiteralData;
+                case TYPE_SUM:
+                {
+                    foreach (Packet P in SubPackets)
+                        lRes += P.lnLiteralData;
+                    break;
+                }
+
+                case TYPE_PRODUCT:
+                {
+                    lRes = 1;
+                    foreach (Packet P in SubPackets)
+                        lRes *= P.lnLiteralData;
+                    break ;
+                }
+
+                case TYPE_MINIMUM:
+                {
+                    lRes = long.MaxValue;
+                    foreach (Packet P in SubPackets)
+                        if (P.lnLiteralData < lRes)
+                            lRes = P.lnLiteralData;
+                    break;
+                }
+
+                case TYPE_MAXIMUM:
+                {
+                    foreach (Packet P in SubPackets)
+                        if (P.lnLiteralData > lRes)
+                            lRes = P.lnLiteralData;
+                     break;
+                }
+
+                case TYPE_GREATER:
+                {
+                    lRes = SubPackets[0].lnLiteralData > SubPackets[1].lnLiteralData ? 1 : 0;
+                    break;
+                }
+
+                case TYPE_LESS:
+                {
+                    lRes = SubPackets[0].lnLiteralData < SubPackets[1].lnLiteralData ? 1 : 0;
+                    break;
+                }
+
+                case TYPE_EQUAL:
+                {
+                    lRes = SubPackets[0].lnLiteralData == SubPackets[1].lnLiteralData ? 1 : 0;
+                    break;
+                }
             }
-
-            if (this.type_id == TYPE_PRODUCT)
-            {
-                lRes = 1;
-                foreach (Packet P in SubPackets)
-                    lRes *= P.lnLiteralData;
-            }
-
-            if (this.type_id == TYPE_MINIMUM)
-            {
-                lRes = long.MaxValue;
-                foreach (Packet P in SubPackets)
-                    if (P.lnLiteralData < lRes)
-                        lRes = P.lnLiteralData;
-            }
-
-            if (this.type_id == TYPE_MAXIMUM)
-            {
-                foreach (Packet P in SubPackets)
-                    if (P.lnLiteralData > lRes)
-                        lRes = P.lnLiteralData;
-            }
-
-            if (this.type_id == TYPE_GREATER)
-            {
-                lRes = SubPackets[0].lnLiteralData > SubPackets[1].lnLiteralData? 1: 0;
-            }
-
-            if (this.type_id == TYPE_LESS)
-            {
-                lRes = SubPackets[0].lnLiteralData < SubPackets[1].lnLiteralData ? 1 : 0;
-            }
-
-            if (this.type_id == TYPE_EQUAL)
-            {
-                lRes = SubPackets[0].lnLiteralData == SubPackets[1].lnLiteralData ? 1 : 0;
-            }
-
-
             return lRes;
         }
     }
     public class Program
     {
-        // Answers for Data_p.txt  Part 1: 854      Part 2: 
+        // Answers for Data_p.txt  Part 1: 854      Part 2: 186189840660
         static readonly string filePath = @".\..\..\..\Data_p.txt";
         public static void Main(string[] args)
         {
             string binaryInput = ParsingInputData();
             Packet P = new Packet(binaryInput);
-            Console.WriteLine("Part one: {0, 10:0}", P.GetVersionSum());
-
-
-
+            Console.WriteLine("Part one: {0, 15:0}", P.GetVersionSum());
+            Console.WriteLine("Part two: {0, 15:0}", P.ProcessPacket());
         }
         public static string ParsingInputData(string? sHexString = null)
         {
