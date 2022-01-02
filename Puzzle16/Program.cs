@@ -2,13 +2,25 @@
 {
     public class Packet
     {
-        public int PacketSize { get; }
+        // CONSTANTS
+        const int LITERAL_SIZE      =  5;
+        const int VERISON_SIZE      =  3;
+        const int TYPE_ID_SIZE      =  3;
+        const int CONVERT_FROM_BIN  =  2;
+        const int TOTAL_LEN_SIZE    = 15;
+        const int PACKET_CNT_SIZE   = 11;
+        const int LEN_TYPE_ID_SIZE  =  1;
+
+        // PACKETS IDs
+        const int TYPE_LITERAL = 4;
+
+        public int Pointer { get; }
         // Header
         public int version { get; }
         int type_id;
-        int len_type_id = -1;    // To indicate which subsequent binary data represents its sub-packets, an operator packet can use one of two modes
-        int  total_len = -1;      // len_type_id == 0 -> 15 bits are a number that represents the total length in bits of the sub-packets contained by this packet.
-        int packet_count = -1;   // len_type_id == 1 -> 11 bits are a number that represents the number of sub-packets immediately contained by this packet.
+        int len_type_id     = -1;   // To indicate which subsequent binary data represents its sub-packets, an operator packet can use one of two modes
+        int total_len       = -1;   // len_type_id == 0 -> 15 bits are a number that represents the total length in bits of the sub-packets contained by this packet.
+        int packet_count    = -1;   // len_type_id == 1 -> 11 bits are a number that represents the number of sub-packets immediately contained by this packet.
         // Data
         string sLiteralData = String.Empty;
         long nLiteralData = 0;
@@ -16,19 +28,21 @@
         List<Packet> SubPackets = new List<Packet>();
         public Packet(string input)
         {
-            version = Convert.ToInt32(input.Substring(0, 3), 2);
-            type_id = Convert.ToInt32(input.Substring(3, 3), 2);
+            version = Convert.ToInt32(input.Substring(0, VERISON_SIZE), CONVERT_FROM_BIN);
+            type_id = Convert.ToInt32(input.Substring(3, TYPE_ID_SIZE), CONVERT_FROM_BIN);
+            
+            Pointer = VERISON_SIZE + TYPE_ID_SIZE;
 
-            if (type_id == 4) // Literal packet
+            if (type_id == TYPE_LITERAL)
             {
-                PacketSize = 6;
-                sLiteralData = input.Substring(6);
-                nLiteralData = 0;
-                for (int i = 0; i < sLiteralData.Length; i+=5)
+
+                sLiteralData = input.Substring(Pointer);
+
+                for (int i = 0; i < sLiteralData.Length; i+= LITERAL_SIZE)
                 {
-                    PacketSize += 5;
-                    string s = sLiteralData.Substring(i, 5);
-                    nLiteralData = nLiteralData * 16 + Convert.ToInt32(s.Substring(1,4), 2);
+                    Pointer += LITERAL_SIZE;
+                    string s = sLiteralData.Substring(i, LITERAL_SIZE);
+                    nLiteralData = nLiteralData * 16 + Convert.ToInt32(s.Substring(1, LITERAL_SIZE - 1), CONVERT_FROM_BIN);
                     if (s[0] == '0')
                         break;
                 }
@@ -36,25 +50,25 @@
             }
             else // Operator
             {
-                len_type_id = Convert.ToInt32(input.Substring(6, 1), 2);
+                len_type_id = Convert.ToInt32(input.Substring(Pointer, LEN_TYPE_ID_SIZE), CONVERT_FROM_BIN);
 
                 if (len_type_id == 0)
                 {
-                    total_len = Convert.ToInt32(input.Substring(7, 15), 2);
-                    PacketSize = 22;
+                    Pointer += TOTAL_LEN_SIZE + LEN_TYPE_ID_SIZE;
+                    total_len = Pointer + Convert.ToInt32(input.Substring(7, TOTAL_LEN_SIZE), CONVERT_FROM_BIN);
                 }
                 else
                 {
-                    packet_count = Convert.ToInt32(input.Substring(7, 11), 2);
-                    PacketSize = 18;
+                    Pointer += PACKET_CNT_SIZE + LEN_TYPE_ID_SIZE;
+                    packet_count = Convert.ToInt32(input.Substring(7, PACKET_CNT_SIZE), CONVERT_FROM_BIN);
                 }
 
                 int packet_number = 0;
-                while (packet_number < packet_count || PacketSize < total_len + 22)
+                while (packet_number < packet_count || Pointer < total_len)
                 {
-                    Packet P = new Packet(input.Substring(PacketSize));
+                    Packet P = new Packet(input.Substring(Pointer));
                     SubPackets.Add(P);
-                    PacketSize += P.PacketSize;
+                    Pointer += P.Pointer;
                     packet_number++;
                 }
             }
@@ -72,28 +86,26 @@
     {
         // Answers for Data_p.txt  Part 1: 854      Part 2: 
         static readonly string filePath = @".\..\..\..\Data_p.txt";
-        static string binaryInput = string.Empty;
         public static void Main(string[] args)
         {
-            ParsingInputData();
+            string binaryInput = ParsingInputData();
             Packet P = new Packet(binaryInput);
             Console.WriteLine(" ---- Version Sum: {0} ----", P.GetVersionSum());
         }
-        private static void ParsingInputData(string sHexString = null)
+        private static string ParsingInputData(string? sHexString = null)
         {
-            string InputData = sHexString;
-
             if (sHexString == null)
                 using (StreamReader file = new(filePath))
-                    InputData = file.ReadLine();
+                    sHexString = file.ReadLine();
 
-            binaryInput = string.Empty;
-            for (int i = 0; i < InputData.Length; i ++)
+            string binaryInput = string.Empty;
+            for (int i = 0; i < sHexString.Length; i ++)
             {
-                string sHex8 = InputData.Substring(i, 1);
-                string sBin = Convert.ToString(Convert.ToInt64(sHex8, 16), 2).PadLeft(4, '0');
-                binaryInput += sBin;
+                string sHex = sHexString.Substring(i, 1);
+                binaryInput += Convert.ToString(Convert.ToInt64(sHex, 16), 2).PadLeft(4, '0');
             }
+
+            return binaryInput;
         }
     }
 }
