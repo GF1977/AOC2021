@@ -31,7 +31,7 @@
         int packet_count    = -1;   // len_type_id == 1 -> 11 bits are a number that represents the number of sub-packets immediately contained by this packet.
         // Data
         string sLiteralData = String.Empty;
-        long nLiteralData = 0;
+        long lnLiteralData = 0;
         // SubPackets
         List<Packet> SubPackets = new List<Packet>();
         public Packet(string input)
@@ -50,11 +50,11 @@
                 {
                     Pointer += LITERAL_SIZE;
                     string s = sLiteralData.Substring(i, LITERAL_SIZE);
-                    nLiteralData = nLiteralData * 16 + Convert.ToInt32(s.Substring(1, LITERAL_SIZE - 1), CONVERT_FROM_BIN);
+                    lnLiteralData = lnLiteralData * 16 + Convert.ToInt32(s.Substring(1, LITERAL_SIZE - 1), CONVERT_FROM_BIN);
                     if (s[0] == '0')
                         break;
                 }
-                //Console.WriteLine("nLiteralData = {0}", nLiteralData);
+                //Console.WriteLine("lnLiteralData = {0}", lnLiteralData);
             }
             else // Operator
             {
@@ -89,6 +89,57 @@
 
             return nVersionSum;
         }
+
+        public long ProcessPacket()
+        {
+            long lRes = 0;
+
+            if (this.type_id == TYPE_SUM)
+            {
+                foreach (Packet P in SubPackets)
+                    lRes += P.lnLiteralData;
+            }
+
+            if (this.type_id == TYPE_PRODUCT)
+            {
+                lRes = 1;
+                foreach (Packet P in SubPackets)
+                    lRes *= P.lnLiteralData;
+            }
+
+            if (this.type_id == TYPE_MINIMUM)
+            {
+                lRes = long.MaxValue;
+                foreach (Packet P in SubPackets)
+                    if (P.lnLiteralData < lRes)
+                        lRes = P.lnLiteralData;
+            }
+
+            if (this.type_id == TYPE_MAXIMUM)
+            {
+                foreach (Packet P in SubPackets)
+                    if (P.lnLiteralData > lRes)
+                        lRes = P.lnLiteralData;
+            }
+
+            if (this.type_id == TYPE_GREATER)
+            {
+                lRes = SubPackets[0].lnLiteralData > SubPackets[1].lnLiteralData? 1: 0;
+            }
+
+            if (this.type_id == TYPE_LESS)
+            {
+                lRes = SubPackets[0].lnLiteralData < SubPackets[1].lnLiteralData ? 1 : 0;
+            }
+
+            if (this.type_id == TYPE_EQUAL)
+            {
+                lRes = SubPackets[0].lnLiteralData == SubPackets[1].lnLiteralData ? 1 : 0;
+            }
+
+
+            return lRes;
+        }
     }
     public class Program
     {
@@ -98,7 +149,10 @@
         {
             string binaryInput = ParsingInputData();
             Packet P = new Packet(binaryInput);
-            Console.WriteLine(" ---- Version Sum: {0} ----", P.GetVersionSum());
+            Console.WriteLine("Part one: {0, 10:0}", P.GetVersionSum());
+
+
+
         }
         public static string ParsingInputData(string? sHexString = null)
         {
