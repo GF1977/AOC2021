@@ -45,7 +45,40 @@
             snailfish_number X = new snailfish_number(res);
             return X;
         }
-        
+        public snailfish_number CheckAndSplit()
+        {
+            string s = number;
+            s = s.Replace("[", ".[.");
+            s = s.Replace("]", ".].");
+            s = s.Replace(",", ".,.");
+            s = s.Replace("..", ".");
+
+            string[] allElements = s.Split(".");
+
+            for (int i = 0; i < allElements.Length; i++)
+            {
+                if(int.TryParse(allElements[i], out int N))
+                {
+                    if(N >= 10)
+                    {
+                        int nNewLeft = (int)Math.Floor(N / 2.0);
+                        int nNewRight = (int)Math.Ceiling(N / 2.0);
+                        string newElement = "[" + nNewLeft.ToString() + "," + nNewRight.ToString() + "]";
+                        allElements[i] = newElement;
+                        string sFinalNumber = string.Empty;
+                        for (int j = 0; j < allElements.Length; j++)
+                        {
+                            sFinalNumber += allElements[j];
+                        }
+
+                        return new snailfish_number(sFinalNumber);
+                    }
+
+                }
+            }
+
+            return new snailfish_number();
+        }
 
         public snailfish_number Explode(string sToExplode)
         {
@@ -103,15 +136,17 @@
 
             foreach (var pair in pairs)
             {
-                //var FirstPairToCheck = pair.V.First(p => p.Value[1] != 'K');
-                //string sKey = FirstPairToCheck.Key;
 
                 if(!pair.Value.Contains("K"))
-                if (GetDepthLevel(pair.Key) >= 4)
-                {
-                    Res = Explode(pair.Value);
-                    break;
-                }
+                    if (GetDepthLevel(pair.Key) > 4)
+                    {
+                        Res = Explode(pair.Value);
+                        return Res;
+                    }
+
+
+                Res = CheckAndSplit();
+
             }
             return Res;
         }
@@ -146,21 +181,23 @@
             //snailfish_number A = new snailfish_number("[1,2]");
             //snailfish_number B = new snailfish_number("[[3,4],5]");
 
-            snailfish_number A = new snailfish_number("[[[[[9,8],1],2],3],4]");
-            snailfish_number B = new snailfish_number("[[7,1],[6,[5,[4,[3,2]]]]]");
-            snailfish_number C = new snailfish_number("[[6,[5,[4,[3,2]]]],1]");
-            //Console.WriteLine(A + B);
+            snailfish_number A = new snailfish_number("[[[[4,3],4],4],[7,[[8,4],9]]]");
+            snailfish_number B = new snailfish_number("[1,1]");
 
 
-            snailfish_number A1 = A.Reduce();
-            snailfish_number B1 = B.Reduce();
-            snailfish_number C1 = C.Reduce();
-            Console.WriteLine("Before: {0}     After: {1}", A, A1);
-            Console.WriteLine("Before: {0}     After: {1}", B, B1);
-            Console.WriteLine("Before: {0}     After: {1}", C, C1);
+            snailfish_number C = A + B;
+
+
+            while(true)
+            {
+                snailfish_number C1 = C.Reduce();
+                if (C1.number == null)
+                    break;
+
+                Console.WriteLine("Before: {0}     After: {1}", C, C1);
+                C = new snailfish_number(C1.number);
+            }
         }
-
-
         private static void ParsingInputData()
         {
             using (StreamReader file = new(filePath))
