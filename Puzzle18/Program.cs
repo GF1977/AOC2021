@@ -4,10 +4,10 @@
     {
         public string number { get; }
         private Dictionary<string, string> pairs { get; }
-        //public snailfish_number()
-        //{
-        //    pairs = new Dictionary<string, string>();
-        //}
+        public snailfish_number()
+        {
+            pairs = new Dictionary<string, string>();
+        }
         public snailfish_number(string s)
         {
             number = s;
@@ -47,35 +47,15 @@
         }
         
 
-        public void Reduce()
-        {
-
-        }
-        public snailfish_number Explode()
+        public snailfish_number Explode(string sToExplode)
         {
             string sRes = string.Empty;
-            int nNestLevel = 0;
-            var FirstPairToCheck = pairs.First(p=>p.Value[1] != 'K' );
-            string sKey = FirstPairToCheck.Key;
-            while (isNested(sKey, out string hostKey))
-            {
-                sKey = hostKey;
-                nNestLevel++;
-            }
 
-            if (nNestLevel >= 4)
-            {
-               
-                string temp = FirstPairToCheck.Value;
-
-                
-                string[] twoInts = temp.Substring(1, temp.Length - 2).Split(",");
-                int nLeft  = int.Parse(twoInts[0]);
+                string[] twoInts = sToExplode.Substring(1, sToExplode.Length - 2).Split(",");
+                int nLeft = int.Parse(twoInts[0]);
                 int nRight = int.Parse(twoInts[1]);
 
-                string s = number.Replace(temp, "X");
-                //s = s.Remove('[');
-                //s = s.Remove(']');
+                string s = number.Replace(sToExplode, "X");
                 s = s.Replace("[", ".[.");
                 s = s.Replace("]", ".].");
                 s = s.Replace(",", ".,.");
@@ -83,11 +63,11 @@
 
                 string[] allElements = s.Split(".");
 
-                for (int i=0; i< allElements.Length; i++)
+                for (int i = 0; i < allElements.Length; i++)
                 {
-                    if(allElements[i] == "X")
+                    if (allElements[i] == "X")
                     {
-                        for(int a = i; a>0; a--)
+                        for (int a = i; a > 0; a--)
                         {
                             if (int.TryParse(allElements[a], out int N))
                             {
@@ -114,22 +94,41 @@
                     sRes += allElements[i];
                 }
                 sRes = sRes.Replace("X", "0");
+
+            return new snailfish_number(sRes);
+        }
+        public snailfish_number Reduce()
+        {
+            snailfish_number Res = new snailfish_number();
+
+            foreach (var pair in pairs)
+            {
+                //var FirstPairToCheck = pair.V.First(p => p.Value[1] != 'K');
+                //string sKey = FirstPairToCheck.Key;
+
+                if(!pair.Value.Contains("K"))
+                if (GetDepthLevel(pair.Key) >= 4)
+                {
+                    Res = Explode(pair.Value);
+                    break;
+                }
             }
-
-
-                return new snailfish_number(sRes);
+            return Res;
         }
 
-        private bool isNested(string sKey, out string hostKey)
+        private int GetDepthLevel(string sKey)
         {
-            hostKey = null;
-            if(sKey!=pairs.Last().Key)
-                hostKey = pairs.First(v => v.Value.Contains(sKey)).Key;
-
-            if (hostKey != null)
-                return true;
-            else
-                return false;
+            int nDepthLevel = 0;
+            while (sKey != null)
+            {
+                if (sKey != pairs.Last().Key)
+                    sKey = pairs.First(v => v.Value.Contains(sKey)).Key;
+                else
+                    sKey = null;
+                
+                nDepthLevel++;
+            }
+            return nDepthLevel;
         }
 
         public override string ToString() => $"{number}";
@@ -148,14 +147,14 @@
             //snailfish_number B = new snailfish_number("[[3,4],5]");
 
             snailfish_number A = new snailfish_number("[[[[[9,8],1],2],3],4]");
-            snailfish_number B = new snailfish_number("[7,[6,[5,[4,[3,2]]]]]");
+            snailfish_number B = new snailfish_number("[[7,1],[6,[5,[4,[3,2]]]]]");
             snailfish_number C = new snailfish_number("[[6,[5,[4,[3,2]]]],1]");
             //Console.WriteLine(A + B);
 
 
-            snailfish_number A1 = A.Explode();
-            snailfish_number B1 = B.Explode();
-            snailfish_number C1 = C.Explode();
+            snailfish_number A1 = A.Reduce();
+            snailfish_number B1 = B.Reduce();
+            snailfish_number C1 = C.Reduce();
             Console.WriteLine("Before: {0}     After: {1}", A, A1);
             Console.WriteLine("Before: {0}     After: {1}", B, B1);
             Console.WriteLine("Before: {0}     After: {1}", C, C1);
