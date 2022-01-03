@@ -6,6 +6,7 @@
         private Dictionary<string, string> pairs { get; }
         public snailfish_number()
         {
+            number = null;
             pairs = new Dictionary<string, string>();
         }
         public snailfish_number(string s)
@@ -41,6 +42,11 @@
 
         public static snailfish_number operator +(snailfish_number A, snailfish_number B)
         {
+            
+
+            if (A.number == null) return B;
+            if (B.number == null) return A;
+
             string res = "[" + A.number + "," + B.number + "]";
             snailfish_number X = new snailfish_number(res);
             return X;
@@ -148,7 +154,7 @@
                 Res = CheckAndSplit();
 
             }
-            return Res;
+            return this;
         }
 
         private int GetDepthLevel(string sKey)
@@ -181,22 +187,36 @@
             //snailfish_number A = new snailfish_number("[1,2]");
             //snailfish_number B = new snailfish_number("[[3,4],5]");
 
-            snailfish_number A = new snailfish_number("[[[[4,3],4],4],[7,[[8,4],9]]]");
-            snailfish_number B = new snailfish_number("[1,1]");
+            snailfish_number A = new snailfish_number("[[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]],[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]]");
 
-
-            snailfish_number C = A + B;
-
-
-            while(true)
+            while (true)
             {
-                snailfish_number C1 = C.Reduce();
-                if (C1.number == null)
+                snailfish_number A1 = A.Reduce();
+                if (A1.number == A.number)
                     break;
-
-                Console.WriteLine("Before: {0}     After: {1}", C, C1);
-                C = new snailfish_number(C1.number);
+                Console.WriteLine("Before: {0}     After: {1}", A, A1);
+                A = A1;
             }
+
+            //snailfish_number E = B + D;
+            //snailfish_number C = A + B;
+
+            snailfish_number FinalNumber = new snailfish_number();
+            foreach (var SFN in InputData)
+            {
+                FinalNumber = FinalNumber + new snailfish_number(SFN);
+                while (true)
+                {
+                    snailfish_number C1 = FinalNumber.Reduce();
+                    if (C1.number == null || C1 == FinalNumber)
+                        break;
+
+                    Console.WriteLine("Before: {0}     After: {1}", FinalNumber, C1);
+                    FinalNumber = new snailfish_number(C1.number);
+                }
+            }
+            Console.WriteLine("---------------------------------------------------------------------------------");
+            Console.WriteLine("The Final One: {0}", FinalNumber);
         }
         private static void ParsingInputData()
         {
