@@ -2,7 +2,7 @@
 {
     public class snailfish_number
     {
-        //private string number { get; }
+        public string number { get; }
         private Dictionary<string, string> pairs { get; }
         public snailfish_number()
         {
@@ -10,6 +10,7 @@
         }
         public snailfish_number(string s)
         {
+            number = s;
             pairs = new Dictionary<string, string>();
             int nKey = 0;
             while (true)
@@ -38,44 +39,14 @@
             }
         }
 
-        //public static snailfish_number operator +(snailfish_number A, snailfish_number B)
-        //{
-        //    //snailfish_number res = new snailfish_number();
-            
-        //    foreach( var pair in A)
-        //    {
-
-        //    }
-
-
-        //    return res;
-        //}
-
-        //public snailfish_number(string s)
-        //{
-        //    number = s;
-        //}
-
-        //public static snailfish_number operator +(snailfish_number A, snailfish_number B)
-        //{
-        //    string res = "[" + A.number + "," + B.number + "]";
-        //    return new snailfish_number(res);
-        //}
-
-        //public static snailfish_number Explode()
-        //{
-        //    int nCount = 0;            
-        //    foreach(char c in this.number) 
-        //    {
-        //        if(c == '[') nCount++;
-        //        if(c == ']') nCount--;
-
-        //        if (nCount >= 5) // nested inside four pairs
-
-        //    }
-        //    return new snailfish_number("");
-        //}
-        //public override string ToString() => $"{number}";
+        public static snailfish_number operator +(snailfish_number A, snailfish_number B)
+        {
+            string res = "[" + A.number + "," + B.number + "]";
+            snailfish_number X = new snailfish_number(res);
+            return X;
+        }
+        
+        public override string ToString() => $"{number}";
 
     }
     public class Program
@@ -91,12 +62,14 @@
             //snailfish_number B = new snailfish_number("[[3,4],5]");
 
 
-            snailfish_number A = new snailfish_number("[[[[[9,8],1],2],3],4]");
-            snailfish_number B = new snailfish_number("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]");
+            snailfish_number A = new snailfish_number("[[[[4,3],4],4],[7,[[8,4],9]]]");
+            snailfish_number B = new snailfish_number("[[[[14,13],14],14],[17,[[18,14],19]]]");
             //Console.WriteLine(A + B);
 
-            Console.WriteLine("Part one: {0, 10:0}", 1);
-            Console.WriteLine("Part one: {0, 10:0}", 2);
+            Console.WriteLine("Part one: {0}", A);
+            Console.WriteLine("Part one: {0}", B);
+            snailfish_number X = A + B;
+            Console.WriteLine("Part one: {0}", X);
         }
 
 
