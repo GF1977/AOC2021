@@ -2,18 +2,17 @@
 
 namespace MyApp
 {
-    public class snailfish_number
+    public class SFNum
     {
-        public string number { get; set; }
-        public Dictionary<string, string> pairs { get; }
-        public snailfish_number()
-        {
-            number = null;
-            pairs = new Dictionary<string, string>();
-        }
-        public snailfish_number(string s)
+        private string number { get; set; }
+        private string number_for_parsing { get; set; }
+        private Dictionary<string, string> pairs { get; }
+        public SFNum() { }
+        public SFNum(string s)
         {
             number = s;
+            number_for_parsing = s.Replace("[", ".[.").Replace("]", ".].").Replace(",", ".,.").Replace("..", ".");
+
             pairs = new Dictionary<string, string>();
             int nKey = 0;
             while (true)
@@ -43,24 +42,16 @@ namespace MyApp
                 nKey++;
             }
         }
-        public static snailfish_number operator +(snailfish_number A, snailfish_number B)
+        public static SFNum operator +(SFNum A, SFNum B)
         {
             if (A.number == null) return B;
             if (B.number == null) return A;
 
-            string res = "[" + A.number + "," + B.number + "]";
-            snailfish_number X = new snailfish_number(res);
-            return X;
+            return new SFNum("[" + A.number + "," + B.number + "]");
         }
-        public snailfish_number CheckAndSplit()
+        public SFNum CheckAndSplit()
         {
-            string s = number;
-            s = s.Replace("[", ".[.");
-            s = s.Replace("]", ".].");
-            s = s.Replace(",", ".,.");
-            s = s.Replace("..", ".");
-
-            string[] allElements = s.Split(".");
+            string[] allElements = number_for_parsing.Split(".");
 
             for (int i = 0; i < allElements.Length; i++)
             {
@@ -78,12 +69,12 @@ namespace MyApp
                             sFinalNumber += allElements[j];
                         }
 
-                        return new snailfish_number(sFinalNumber);
+                        return new SFNum(sFinalNumber);
                     }
 
                 }
             }
-            return new snailfish_number();
+            return new SFNum();
         }
 
         public void UpdateNumber()
@@ -98,8 +89,9 @@ namespace MyApp
             }
 
             number = s;
+            number_for_parsing = s.Replace("[", ".[.").Replace("]", ".].").Replace(",", ".,.").Replace("..", ".");
         }
-        public snailfish_number Explode(string sKeyToExplode)
+        public SFNum Explode(string sKeyToExplode)
         {
             string sRes = string.Empty;
             string sToExplode = pairs[sKeyToExplode];
@@ -109,13 +101,7 @@ namespace MyApp
             int nLeft = int.Parse(twoInts[0]);
             int nRight = int.Parse(twoInts[1]);
 
-            string s = number; //.Replace(sToExplode, "X");
-            s = s.Replace("[", ".[.");
-            s = s.Replace("]", ".].");
-            s = s.Replace(",", ".,.");
-            s = s.Replace("..", ".");
-
-            string[] allElements = s.Split(".");
+            string[] allElements = number_for_parsing.Split(".");
 
             for (int i = 0; i < allElements.Length; i++)
             {
@@ -149,50 +135,48 @@ namespace MyApp
             }
             sRes = sRes.Replace("X", "0");
 
-            return new snailfish_number(sRes);
+            return new SFNum(sRes);
         }
 
-        public snailfish_number Reduce2()
+        public SFNum Reduce()
         {
-            snailfish_number FinalNumber = new snailfish_number(this.number);
+            SFNum FinalNumber = new SFNum(this.number);
             while (true)
             {
-                snailfish_number C1 = FinalNumber.Reduce();
+                SFNum C1 = FinalNumber.ReduceOneStep();
                 if (C1.number == null || C1 == FinalNumber)
                     break;
-                FinalNumber = new snailfish_number(C1.number);
+                FinalNumber = new SFNum(C1.number);
             }
 
             return FinalNumber;
         }
 
-        public snailfish_number Reduce()
+        public SFNum ReduceOneStep()
         {
-            snailfish_number Res = this;
+            SFNum Res = new SFNum();
             foreach (var pair in pairs)
             {
-
                 if(!pair.Value.Contains("K"))
                     if (GetDepthLevel(pair.Key) > 4)
                     {
                         Res = Explode(pair.Key);
                         return Res;
                     }
-                Res = CheckAndSplit();
             }
+            Res = CheckAndSplit();
             return Res;
         }
         private int GetDepthLevel(string sKey)
         {
             int nDepthLevel = 0;
-            while (sKey != null)
+            while(true)
             {
+                nDepthLevel++;
                 if (sKey != pairs.Last().Key)
                     sKey = pairs.First(v => v.Value.Contains(sKey)).Key;
                 else
-                    sKey = null;
-                
-                nDepthLevel++;
+                    break;
             }
             return nDepthLevel;
         }
@@ -216,49 +200,39 @@ namespace MyApp
             return GetMagnitudeForPair(pairs.Last().Key);
         }
         public override string ToString() => $"{number}";
-
     }
     public class Program
     {
-        // Answers for Data_p.txt  Part 1:      Part 2: 
-        static readonly string filePath = @".\..\..\..\Data_p.txt";
+        // Answers for Data_p.txt  Part 1: 4417      Part 2: 4796
+        static readonly string filePath = @".\..\..\..\Data_t.txt";
         static List<string> InputData = new List<string>();
         public static void Main(string[] args)
         {
+            long startTimeStamp = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             ParsingInputData();
             Console.WriteLine("Part one: {0, 10:0}", GetPartOne());
             ParsingInputData();
-            Console.WriteLine("Part one: {0, 10:0}", GetPartTwo());
-
+            Console.WriteLine("Part one: {0, 10:0}    Time: {1}", GetPartTwo(), DateTimeOffset.Now.ToUnixTimeMilliseconds() - startTimeStamp);
         }
-
-            private static int GetPartTwo()
+        private static int GetPartTwo()
         {
-            int nRes = 0;
-            snailfish_number FinalNumber = new snailfish_number();
+            int nMaxMagnitude = 0;
             for (int i = 0; i < InputData.Count; i++)
                 for (int j = 0; j < InputData.Count; j++)
                 {
                     if (i == j) break;
 
-                    FinalNumber = new snailfish_number(InputData[i]) + new snailfish_number(InputData[j]);
-                    int nMagnitude = FinalNumber.Reduce2().GetMagnitude();
-                    if (nMagnitude > nRes)
-                        nRes = nMagnitude;
+                    SFNum FinalNumber = new SFNum(InputData[i]) + new SFNum(InputData[j]);
+                    nMaxMagnitude = Math.Max(nMaxMagnitude, FinalNumber.Reduce().GetMagnitude());
                 }
-
-            return nRes;
+            return nMaxMagnitude;
         }
-
-
         private static int GetPartOne()
         {
-            snailfish_number FinalNumber = new snailfish_number();
+            SFNum FinalNumber = new SFNum();
             foreach (var SFN in InputData)
-            {
-                FinalNumber = FinalNumber + new snailfish_number(SFN);
-                FinalNumber = FinalNumber.Reduce2();
-            }
+                FinalNumber = (FinalNumber + new SFNum(SFN)).Reduce();
+
             return FinalNumber.GetMagnitude();
         }
         private static void ParsingInputData()
