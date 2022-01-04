@@ -193,20 +193,45 @@ namespace MyApp
             }
             return nDepthLevel;
         }
+        private int GetMagnitudeForPair(string sKey)
+        {
+            string sValue = pairs[sKey];
+            string[] twoInts = sValue.Substring(1, sValue.Length - 2).Split(",");
+            //int nLeft = int.Parse(twoInts[0]);
+            //int nRight = int.Parse(twoInts[1]);
 
+            bool A = int.TryParse(twoInts[0], out int nLeft);
+            if (A == false)
+                nLeft = GetMagnitudeForPair(twoInts[0]);
+
+            bool B = int.TryParse(twoInts[1], out int nRight);
+            if (B == false)
+                nRight = GetMagnitudeForPair(twoInts[1]);
+
+            return nLeft * 3 + nRight * 2;
+        }
+        public int GetMagnitude()
+        {
+            if (pairs.Count == 0) return 0;
+            
+            string sKey = pairs.Last().Key;
+
+            return GetMagnitudeForPair(sKey);
+        }
         public override string ToString() => $"{number}";
 
     }
     public class Program
     {
         // Answers for Data_p.txt  Part 1:      Part 2: 
-        static readonly string filePath = @".\..\..\..\Data_t.txt";
+        static readonly string filePath = @".\..\..\..\Data_p.txt";
         static List<string> InputData = new List<string>();
         public static void Main(string[] args)
         {
             ParsingInputData();
 
-            //snailfish_number A = new snailfish_number("[1,2]");
+            snailfish_number D = new snailfish_number("[[1,2],[[3,4],5]]");
+            int nMagnitude = D.GetMagnitude();
             //snailfish_number B = new snailfish_number("[[3,4],5]");
 
             // [4,5] - IS duplicated and replaced twice!!
@@ -222,7 +247,7 @@ namespace MyApp
                 snailfish_number A1 = A.Reduce();
                 if (A1.number == null)
                     break;
-                Console.WriteLine("Before: {0}     After: {1}", A, A1);
+                //Console.WriteLine("Before: {0}     After: {1}", A, A1);
                 A = A1;
             }
 
@@ -239,12 +264,12 @@ namespace MyApp
                     if (C1.number == null || C1 == FinalNumber)
                         break;
 
-                    Console.WriteLine("Before: {0}     After: {1}", FinalNumber, C1);
+                    //Console.WriteLine("Before: {0}     After: {1}", FinalNumber, C1);
                     FinalNumber = new snailfish_number(C1.number);
                 }
             }
             Console.WriteLine("---------------------------------------------------------------------------------");
-            Console.WriteLine("The Final One: {0}", FinalNumber);
+            Console.WriteLine("The Final One: {0}              Magnitude: {1}", FinalNumber, FinalNumber.GetMagnitude());
         }
         private static void ParsingInputData()
         {
