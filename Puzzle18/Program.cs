@@ -43,11 +43,8 @@ namespace MyApp
                 nKey++;
             }
         }
-
         public static snailfish_number operator +(snailfish_number A, snailfish_number B)
         {
-            
-
             if (A.number == null) return B;
             if (B.number == null) return A;
 
@@ -86,7 +83,6 @@ namespace MyApp
 
                 }
             }
-
             return new snailfish_number();
         }
 
@@ -106,15 +102,12 @@ namespace MyApp
         public snailfish_number Explode(string sKeyToExplode)
         {
             string sRes = string.Empty;
-
-                    
             string sToExplode = pairs[sKeyToExplode];
             pairs[sKeyToExplode] = "X";
             UpdateNumber();
             string[] twoInts = sToExplode.Substring(1, sToExplode.Length - 2).Split(",");
             int nLeft = int.Parse(twoInts[0]);
             int nRight = int.Parse(twoInts[1]);
-
 
             string s = number; //.Replace(sToExplode, "X");
             s = s.Replace("[", ".[.");
@@ -158,10 +151,24 @@ namespace MyApp
 
             return new snailfish_number(sRes);
         }
+
+        public snailfish_number Reduce2()
+        {
+            snailfish_number FinalNumber = new snailfish_number(this.number);
+            while (true)
+            {
+                snailfish_number C1 = FinalNumber.Reduce();
+                if (C1.number == null || C1 == FinalNumber)
+                    break;
+                FinalNumber = new snailfish_number(C1.number);
+            }
+
+            return FinalNumber;
+        }
+
         public snailfish_number Reduce()
         {
             snailfish_number Res = this;
-
             foreach (var pair in pairs)
             {
 
@@ -171,14 +178,10 @@ namespace MyApp
                         Res = Explode(pair.Key);
                         return Res;
                     }
-
-
                 Res = CheckAndSplit();
-
             }
             return Res;
         }
-
         private int GetDepthLevel(string sKey)
         {
             int nDepthLevel = 0;
@@ -197,8 +200,6 @@ namespace MyApp
         {
             string sValue = pairs[sKey];
             string[] twoInts = sValue.Substring(1, sValue.Length - 2).Split(",");
-            //int nLeft = int.Parse(twoInts[0]);
-            //int nRight = int.Parse(twoInts[1]);
 
             bool A = int.TryParse(twoInts[0], out int nLeft);
             if (A == false)
@@ -212,11 +213,7 @@ namespace MyApp
         }
         public int GetMagnitude()
         {
-            if (pairs.Count == 0) return 0;
-            
-            string sKey = pairs.Last().Key;
-
-            return GetMagnitudeForPair(sKey);
+            return GetMagnitudeForPair(pairs.Last().Key);
         }
         public override string ToString() => $"{number}";
 
@@ -229,56 +226,47 @@ namespace MyApp
         public static void Main(string[] args)
         {
             ParsingInputData();
+            Console.WriteLine("Part one: {0, 10:0}", GetPartOne());
+            ParsingInputData();
+            Console.WriteLine("Part one: {0, 10:0}", GetPartTwo());
 
-            snailfish_number D = new snailfish_number("[[1,2],[[3,4],5]]");
-            int nMagnitude = D.GetMagnitude();
-            //snailfish_number B = new snailfish_number("[[3,4],5]");
+        }
 
-            // [4,5] - IS duplicated and replaced twice!!
-            snailfish_number A = new snailfish_number("[[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]],[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]]");
-            string sBefore = A.number;
-            //A.pairs["K5"] = "[77,78]";
-            //A.UpdateNumber();
-            string sAfter = A.number;
-            //Console.WriteLine("Before: {0}     After: {1}", sBefore, sAfter);
+            private static int GetPartTwo()
+        {
+            int nRes = 0;
+            snailfish_number FinalNumber = new snailfish_number();
+            for (int i = 0; i < InputData.Count; i++)
+                for (int j = 0; j < InputData.Count; j++)
+                {
+                    if (i == j) break;
 
-            while (true)
-            {
-                snailfish_number A1 = A.Reduce();
-                if (A1.number == null)
-                    break;
-                //Console.WriteLine("Before: {0}     After: {1}", A, A1);
-                A = A1;
-            }
+                    FinalNumber = new snailfish_number(InputData[i]) + new snailfish_number(InputData[j]);
+                    int nMagnitude = FinalNumber.Reduce2().GetMagnitude();
+                    if (nMagnitude > nRes)
+                        nRes = nMagnitude;
+                }
 
-            //snailfish_number E = B + D;
-            //snailfish_number C = A + B;
+            return nRes;
+        }
 
+
+        private static int GetPartOne()
+        {
             snailfish_number FinalNumber = new snailfish_number();
             foreach (var SFN in InputData)
             {
                 FinalNumber = FinalNumber + new snailfish_number(SFN);
-                while (true)
-                {
-                    snailfish_number C1 = FinalNumber.Reduce();
-                    if (C1.number == null || C1 == FinalNumber)
-                        break;
-
-                    //Console.WriteLine("Before: {0}     After: {1}", FinalNumber, C1);
-                    FinalNumber = new snailfish_number(C1.number);
-                }
+                FinalNumber = FinalNumber.Reduce2();
             }
-            Console.WriteLine("---------------------------------------------------------------------------------");
-            Console.WriteLine("The Final One: {0}              Magnitude: {1}", FinalNumber, FinalNumber.GetMagnitude());
+            return FinalNumber.GetMagnitude();
         }
         private static void ParsingInputData()
         {
+            InputData.Clear();
             using (StreamReader file = new(filePath))
                 while (!file.EndOfStream)
-                {
-                    string line = file.ReadLine();
-                    InputData.Add(line);
-                }
+                    InputData.Add(file.ReadLine());
         }
     }
 }
