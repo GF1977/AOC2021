@@ -1,9 +1,11 @@
-﻿namespace MyApp
+﻿using System.Text.RegularExpressions;
+
+namespace MyApp
 {
     public class snailfish_number
     {
-        public string number { get; }
-        private Dictionary<string, string> pairs { get; }
+        public string number { get; set; }
+        public Dictionary<string, string> pairs { get; }
         public snailfish_number()
         {
             number = null;
@@ -34,7 +36,9 @@
 
                 string sKey = "K" + nKey.ToString();
                 pairs.Add(sKey, sPair);
-                s = s.Replace(sPair, sKey);
+
+                var regex = new Regex(Regex.Escape(sPair));
+                s = regex.Replace(s, sKey, 1); // we need to replace only first occurance.
 
                 nKey++;
             }
@@ -86,59 +90,77 @@
             return new snailfish_number();
         }
 
-        public snailfish_number Explode(string sToExplode)
+        public void UpdateNumber()
+        {
+            if (pairs.Count == 0) return;
+            
+            string s = pairs.Last().Value;
+            for(int i = pairs.Count - 1; i >= 0;  i--)
+            {
+                string sKey = "K"+i.ToString();
+                s = s.Replace(sKey, pairs[sKey]);
+            }
+
+            number = s;
+        }
+        public snailfish_number Explode(string sKeyToExplode)
         {
             string sRes = string.Empty;
 
-                string[] twoInts = sToExplode.Substring(1, sToExplode.Length - 2).Split(",");
-                int nLeft = int.Parse(twoInts[0]);
-                int nRight = int.Parse(twoInts[1]);
+                    
+            string sToExplode = pairs[sKeyToExplode];
+            pairs[sKeyToExplode] = "X";
+            UpdateNumber();
+            string[] twoInts = sToExplode.Substring(1, sToExplode.Length - 2).Split(",");
+            int nLeft = int.Parse(twoInts[0]);
+            int nRight = int.Parse(twoInts[1]);
 
-                string s = number.Replace(sToExplode, "X");
-                s = s.Replace("[", ".[.");
-                s = s.Replace("]", ".].");
-                s = s.Replace(",", ".,.");
-                s = s.Replace("..", ".");
 
-                string[] allElements = s.Split(".");
+            string s = number; //.Replace(sToExplode, "X");
+            s = s.Replace("[", ".[.");
+            s = s.Replace("]", ".].");
+            s = s.Replace(",", ".,.");
+            s = s.Replace("..", ".");
 
-                for (int i = 0; i < allElements.Length; i++)
+            string[] allElements = s.Split(".");
+
+            for (int i = 0; i < allElements.Length; i++)
+            {
+                if (allElements[i] == "X")
                 {
-                    if (allElements[i] == "X")
+                    for (int a = i; a > 0; a--)
                     {
-                        for (int a = i; a > 0; a--)
+                        if (int.TryParse(allElements[a], out int N))
                         {
-                            if (int.TryParse(allElements[a], out int N))
-                            {
-                                allElements[a] = (N + nLeft).ToString();
-                                break;
-                            }
+                            allElements[a] = (N + nLeft).ToString();
+                            break;
                         }
-
-                        for (int a = i; a < allElements.Length; a++)
-                        {
-                            if (int.TryParse(allElements[a], out int N))
-                            {
-                                allElements[a] = (N + nRight).ToString();
-                                break;
-                            }
-                        }
-
-                        break;
                     }
-                }
 
-                for (int i = 0; i < allElements.Length; i++)
-                {
-                    sRes += allElements[i];
+                    for (int a = i; a < allElements.Length; a++)
+                    {
+                        if (int.TryParse(allElements[a], out int N))
+                        {
+                            allElements[a] = (N + nRight).ToString();
+                            break;
+                        }
+                    }
+
+                    break;
                 }
-                sRes = sRes.Replace("X", "0");
+            }
+
+            for (int i = 0; i < allElements.Length; i++)
+            {
+                sRes += allElements[i];
+            }
+            sRes = sRes.Replace("X", "0");
 
             return new snailfish_number(sRes);
         }
         public snailfish_number Reduce()
         {
-            snailfish_number Res = new snailfish_number();
+            snailfish_number Res = this;
 
             foreach (var pair in pairs)
             {
@@ -146,7 +168,7 @@
                 if(!pair.Value.Contains("K"))
                     if (GetDepthLevel(pair.Key) > 4)
                     {
-                        Res = Explode(pair.Value);
+                        Res = Explode(pair.Key);
                         return Res;
                     }
 
@@ -154,7 +176,7 @@
                 Res = CheckAndSplit();
 
             }
-            return this;
+            return Res;
         }
 
         private int GetDepthLevel(string sKey)
@@ -187,12 +209,18 @@
             //snailfish_number A = new snailfish_number("[1,2]");
             //snailfish_number B = new snailfish_number("[[3,4],5]");
 
+            // [4,5] - IS duplicated and replaced twice!!
             snailfish_number A = new snailfish_number("[[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]],[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]]");
+            string sBefore = A.number;
+            //A.pairs["K5"] = "[77,78]";
+            //A.UpdateNumber();
+            string sAfter = A.number;
+            //Console.WriteLine("Before: {0}     After: {1}", sBefore, sAfter);
 
             while (true)
             {
                 snailfish_number A1 = A.Reduce();
-                if (A1.number == A.number)
+                if (A1.number == null)
                     break;
                 Console.WriteLine("Before: {0}     After: {1}", A, A1);
                 A = A1;
