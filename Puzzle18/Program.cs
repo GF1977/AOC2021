@@ -5,15 +5,11 @@ namespace MyApp
     public class SFNum
     {
         private string number { get; set; }
-        private string number_for_parsing { get; set; }
-        private Dictionary<string, string> pairs { get; }
+        private Dictionary<string, string> pairs = new Dictionary<string, string>();
         public SFNum() { }
         public SFNum(string s)
         {
             number = s;
-            number_for_parsing = s.Replace("[", ".[.").Replace("]", ".].").Replace(",", ".,.").Replace("..", ".");
-
-            pairs = new Dictionary<string, string>();
             int nKey = 0;
             while (true)
             {
@@ -35,8 +31,8 @@ namespace MyApp
                 string sKey = "K" + nKey.ToString();
                 pairs.Add(sKey, sPair);
 
-                var regex = new Regex(Regex.Escape(sPair));
-                s = regex.Replace(s, sKey, 1); // we need to replace only first occurance.
+                s = s.Remove(nPointerStart, nPointerEnd - nPointerStart + 1);
+                s = s.Insert(nPointerStart, sKey);
 
                 nKey++;
             }
@@ -50,6 +46,7 @@ namespace MyApp
         }
         private SFNum CheckAndSplit()
         {
+            string number_for_parsing = number.Replace("[", ".[.").Replace("]", ".].").Replace(",", ".,.").Replace("..", ".");
             string[] allElements = number_for_parsing.Split(".");
 
             for (int i = 0; i < allElements.Length; i++)
@@ -58,7 +55,7 @@ namespace MyApp
                     {
                         int nNewLeft  = (int)Math.Floor(N / 2.0);
                         int nNewRight = (int)Math.Ceiling(N / 2.0);
-                        allElements[i] = "[" + nNewLeft.ToString() + "," + nNewRight.ToString() + "]";
+                        allElements[i] = "[" + nNewLeft + "," + nNewRight + "]";
 
                         string sFinalNumber = string.Empty;
                         for (int j = 0; j < allElements.Length; j++)
@@ -78,9 +75,7 @@ namespace MyApp
                 string sKey = "K"+i.ToString();
                 s = s.Replace(sKey, pairs[sKey]);
             }
-
             number = s;
-            number_for_parsing = s.Replace("[", ".[.").Replace("]", ".].").Replace(",", ".,.").Replace("..", ".");
         }
         private SFNum Explode(string sKeyToExplode)
         {
@@ -90,7 +85,8 @@ namespace MyApp
 
             int nLeft  = int.Parse(twoInts[0]);
             int nRight = int.Parse(twoInts[1]);
-
+            
+            string number_for_parsing = number.Replace("[", ".[.").Replace("]", ".].").Replace(",", ".,.").Replace("..", ".");
             string[] allElements = number_for_parsing.Split(".");
 
             for (int i = 0; i < allElements.Length; i++)
@@ -127,7 +123,7 @@ namespace MyApp
                 SFNum C1 = FinalNumber.ReduceOneStep();
                 if (C1.number == null || C1 == FinalNumber)
                     break;
-                FinalNumber = new SFNum(C1.number);
+                FinalNumber = C1;// new SFNum(C1.number);
             }
 
             return FinalNumber;
@@ -180,7 +176,7 @@ namespace MyApp
     public class Program
     {
         // Answers for Data_p.txt  Part 1: 4417      Part 2: 4796
-        static readonly string filePath = @".\..\..\..\Data_t.txt";
+        static readonly string filePath = @".\..\..\..\Data_p.txt";
         static List<string> InputData = new List<string>();
         public static void Main(string[] args)
         {
