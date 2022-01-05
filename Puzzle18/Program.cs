@@ -28,11 +28,10 @@ namespace MyApp
                         break;
                     }
                 }
-                string sPair = s.Substring(nPointerStart, nPointerEnd - nPointerStart + 1);
-
                 if (nPointerEnd == 0)
                     break;
 
+                string sPair = s.Substring(nPointerStart, nPointerEnd - nPointerStart + 1);
                 string sKey = "K" + nKey.ToString();
                 pairs.Add(sKey, sPair);
 
@@ -49,38 +48,30 @@ namespace MyApp
 
             return new SFNum("[" + A.number + "," + B.number + "]");
         }
-        public SFNum CheckAndSplit()
+        private SFNum CheckAndSplit()
         {
             string[] allElements = number_for_parsing.Split(".");
 
             for (int i = 0; i < allElements.Length; i++)
-            {
                 if(int.TryParse(allElements[i], out int N))
-                {
                     if(N >= 10)
                     {
-                        int nNewLeft = (int)Math.Floor(N / 2.0);
+                        int nNewLeft  = (int)Math.Floor(N / 2.0);
                         int nNewRight = (int)Math.Ceiling(N / 2.0);
-                        string newElement = "[" + nNewLeft.ToString() + "," + nNewRight.ToString() + "]";
-                        allElements[i] = newElement;
+                        allElements[i] = "[" + nNewLeft.ToString() + "," + nNewRight.ToString() + "]";
+
                         string sFinalNumber = string.Empty;
                         for (int j = 0; j < allElements.Length; j++)
-                        {
                             sFinalNumber += allElements[j];
-                        }
 
                         return new SFNum(sFinalNumber);
                     }
 
-                }
-            }
             return new SFNum();
         }
-
-        public void UpdateNumber()
+        private void UpdateNumber(string sKeyToUpdate, string sNewValue)
         {
-            if (pairs.Count == 0) return;
-            
+            pairs[sKeyToUpdate] = sNewValue;
             string s = pairs.Last().Value;
             for(int i = pairs.Count - 1; i >= 0;  i--)
             {
@@ -91,53 +82,43 @@ namespace MyApp
             number = s;
             number_for_parsing = s.Replace("[", ".[.").Replace("]", ".].").Replace(",", ".,.").Replace("..", ".");
         }
-        public SFNum Explode(string sKeyToExplode)
+        private SFNum Explode(string sKeyToExplode)
         {
-            string sRes = string.Empty;
             string sToExplode = pairs[sKeyToExplode];
-            pairs[sKeyToExplode] = "X";
-            UpdateNumber();
+            this.UpdateNumber(sKeyToExplode,"X");
             string[] twoInts = sToExplode.Substring(1, sToExplode.Length - 2).Split(",");
-            int nLeft = int.Parse(twoInts[0]);
+
+            int nLeft  = int.Parse(twoInts[0]);
             int nRight = int.Parse(twoInts[1]);
 
             string[] allElements = number_for_parsing.Split(".");
 
             for (int i = 0; i < allElements.Length; i++)
-            {
                 if (allElements[i] == "X")
                 {
                     for (int a = i; a > 0; a--)
-                    {
                         if (int.TryParse(allElements[a], out int N))
                         {
                             allElements[a] = (N + nLeft).ToString();
                             break;
                         }
-                    }
 
                     for (int a = i; a < allElements.Length; a++)
-                    {
                         if (int.TryParse(allElements[a], out int N))
                         {
                             allElements[a] = (N + nRight).ToString();
                             break;
                         }
-                    }
-
-                    break;
                 }
-            }
 
+            string sFinalNumber = string.Empty;
             for (int i = 0; i < allElements.Length; i++)
-            {
-                sRes += allElements[i];
-            }
-            sRes = sRes.Replace("X", "0");
+                sFinalNumber += allElements[i];
 
-            return new SFNum(sRes);
+            sFinalNumber = sFinalNumber.Replace("X", "0");
+
+            return new SFNum(sFinalNumber);
         }
-
         public SFNum Reduce()
         {
             SFNum FinalNumber = new SFNum(this.number);
@@ -151,19 +132,15 @@ namespace MyApp
 
             return FinalNumber;
         }
-
-        public SFNum ReduceOneStep()
+        private SFNum ReduceOneStep()
         {
             SFNum Res = new SFNum();
-            foreach (var pair in pairs)
-            {
-                if(!pair.Value.Contains("K"))
-                    if (GetDepthLevel(pair.Key) > 4)
-                    {
-                        Res = Explode(pair.Key);
-                        return Res;
-                    }
-            }
+            foreach (var pair in pairs.Where(v=>v.Value.Contains("K") == false))
+                if (GetDepthLevel(pair.Key) > 4)
+                {
+                    Res = Explode(pair.Key);
+                    return Res;
+                }
             Res = CheckAndSplit();
             return Res;
         }
@@ -182,12 +159,11 @@ namespace MyApp
         }
         private int GetMagnitudeForPair(string sKey)
         {
-            string sValue = pairs[sKey];
-            string[] twoInts = sValue.Substring(1, sValue.Length - 2).Split(",");
+            string[] twoInts = pairs[sKey].Substring(1, pairs[sKey].Length - 2).Split(",");
 
             bool A = int.TryParse(twoInts[0], out int nLeft);
             if (A == false)
-                nLeft = GetMagnitudeForPair(twoInts[0]);
+                nLeft  = GetMagnitudeForPair(twoInts[0]);
 
             bool B = int.TryParse(twoInts[1], out int nRight);
             if (B == false)
