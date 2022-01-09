@@ -116,6 +116,7 @@ namespace MyApp
         public Coordinates scanner_coordinates = new Coordinates(0, 0, 0);
         public int relative_to_scanner = -1;
         public int rotation_number = -1;
+        public int relative_scanner_rotation_number = -1;
 
         public List<Coordinates> beacons_coordinates = new List<Coordinates>();
 
@@ -152,8 +153,9 @@ namespace MyApp
         {
             ParsingInputData();
             List<Coordinates> LDelta = new List<Coordinates>();
-            for (int nScanner1Rotation = 0; nScanner1Rotation < 24; nScanner1Rotation++)
+            
                 for (int i = 0; i < scanners.Count; i++)
+                for (int nScanner1Rotation = 0; nScanner1Rotation < 24; nScanner1Rotation++)
                     for (int k = i + 1; k < scanners.Count; k++)
                     {
                         //int i = 1;
@@ -180,9 +182,10 @@ namespace MyApp
                                         scanners[k].scanner_coordinates = crd;
                                         scanners[k].relative_to_scanner = i;
                                         scanners[k].rotation_number = nScanner1Rotation;
+                                        scanners[k].relative_scanner_rotation_number = nScanner2Rotation;
 
 
-                                        Console.WriteLine("Scanner {0} Rotation = {5}    vs Scanner {1} Rotation = {6}:  Coordinates {2}, {3}, {4}",
+                                    Console.WriteLine("Scanner {0} - R{5}     vs Scanner {1} - R{6}   Coordinates {2}, {3}, {4}",
                                             i, k, crd.x, crd.y, crd.z, nScanner1Rotation, nScanner2Rotation);
                                         break;
                                     }
@@ -199,7 +202,7 @@ namespace MyApp
                                     scanners[i].rotation_number = nScanner2Rotation;
 
 
-                                    Console.WriteLine("Scanner {0} Rotation = {5}    vs Scanner {1} Rotation = {6}:  Coordinates {2}, {3}, {4}",
+                                    Console.WriteLine("Scanner {0} - R{5}   vs Scanner {1} - R{6} :  Coordinates {2}, {3}, {4}",
                                         i, k, crd.x, crd.y, crd.z, nScanner1Rotation, nScanner2Rotation);
                                     break;
                                 }
@@ -210,6 +213,7 @@ namespace MyApp
                         }
                     }
             Console.WriteLine();
+            //scanners[0].scanner_coordinates = new Coordinates(0, 0, 0);
             NormalizeScannerCoordinates();
 
             //foreach (Coordinates crd in LDelta)
@@ -224,11 +228,22 @@ namespace MyApp
             {
                 if (S.id > 0 && S.relative_to_scanner > 0)
                 {
-                    Coordinates normalCrd = new Coordinates(1, 1, 1);
-                    normalCrd = Coordinates.RotateCoordinate(normalCrd, scanners[S.relative_to_scanner].rotation_number);
+                    //Coordinates normalCrd = new Coordinates(1, 1, 1);
+                    //normalCrd = Coordinates.RotateCoordinate(normalCrd, scanners[S.relative_to_scanner].rotation_number);
 
                     Coordinates crd = S.scanner_coordinates;
-                    crd = crd * normalCrd;
+                    //crd = crd * normalCrd;
+
+                    //crd = Coordinates.RotateCoordinate(crd, scanners[S.relative_to_scanner].relative_scanner_rotation_number);
+                    //crd = Coordinates.RotateCoordinate(crd, S.relative_scanner_rotation_number);
+                    //crd = Coordinates.RotateCoordinate(crd, S.rotation_number);
+                    Coordinates one = new Coordinates(1, 1, 1);
+
+                    Coordinates crd1 = Coordinates.RotateCoordinate(one, scanners[S.relative_to_scanner].relative_scanner_rotation_number);
+                    Coordinates crd2 = Coordinates.RotateCoordinate(one, S.relative_scanner_rotation_number);
+                    Coordinates crd3 = Coordinates.RotateCoordinate(one, S.rotation_number);
+
+                    crd = crd * crd1 * crd2 * crd3;
 
                     crd = crd + scanners[S.relative_to_scanner].scanner_coordinates;
                     S.scanner_coordinates = crd;
