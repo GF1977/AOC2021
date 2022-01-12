@@ -29,7 +29,24 @@ namespace MyApp
 
             return result;
         }
+        public static Coordinate RotateCoordinateOpposite(Coordinate crd, int n)
+        {
+            if (n == 1) return RotateCoordinate(crd, 3);
+            if (n == 5) return RotateCoordinate(crd, 7);
+            if (n == 9) return RotateCoordinate(crd, 11);
+            if (n == 13) return RotateCoordinate(crd, 15);
+            if (n == 17) return RotateCoordinate(crd, 19);
+            if (n == 21) return RotateCoordinate(crd, 23);
 
+            if (n == 3) return RotateCoordinate(crd, 1);
+            if (n == 7) return RotateCoordinate(crd, 5);
+            if (n == 11) return RotateCoordinate(crd, 9);
+            if (n == 15) return RotateCoordinate(crd, 13);
+            if (n == 19) return RotateCoordinate(crd, 17);
+            if (n == 23) return RotateCoordinate(crd, 21);
+
+            return RotateCoordinate(crd, n);
+        }
         public static Coordinate RotateCoordinate(Coordinate crd, int n)
         {
             int x = crd.x;
@@ -38,32 +55,32 @@ namespace MyApp
 
             if (n < 0 && n > 23) throw new ArgumentOutOfRangeException();
 
-            if (n == 0) return new Coordinate(x, y, z);
-            if (n == 1) return new Coordinate(y, -x, z);
-            if (n == 2) return new Coordinate(-x, -y, z);
-            if (n == 3) return new Coordinate(-y, x, z);
-            if (n == 4) return new Coordinate(x, y, -z);
-            if (n == 5) return new Coordinate(y, -x, -z);
-            if (n == 6) return new Coordinate(-x, -y, -z);
-            if (n == 7) return new Coordinate(-y, x, -z);
+            if (n ==  0) return new Coordinate( x,  y,  z);
+            if (n ==  1) return new Coordinate( y, -x,  z);
+            if (n ==  2) return new Coordinate(-x, -y,  z);
+            if (n ==  3) return new Coordinate(-y,  x,  z);
+            if (n ==  4) return new Coordinate( x,  y, -z);
+            if (n ==  5) return new Coordinate( y, -x, -z);
+            if (n ==  6) return new Coordinate(-y, -x, -z);
+            if (n ==  7) return new Coordinate(-y,  x, -z);
 
-            if (n == 8) return new Coordinate(x, y, z);
-            if (n == 9) return new Coordinate(z, y, -x);
-            if (n == 10) return new Coordinate(-x, y, -z);
-            if (n == 11) return new Coordinate(-z, y, x);
-            if (n == 12) return new Coordinate(x, -y, z);
-            if (n == 13) return new Coordinate(z, -y, -x);
+            if (n ==  8) return new Coordinate( z,  y,  x);
+            if (n ==  9) return new Coordinate( z,  y, -x);
+            if (n == 10) return new Coordinate(-x,  y, -z);
+            if (n == 11) return new Coordinate(-z,  y,  x);
+            if (n == 12) return new Coordinate( x, -y,  z);
+            if (n == 13) return new Coordinate( z, -y, -x);
             if (n == 14) return new Coordinate(-x, -y, -z);
-            if (n == 15) return new Coordinate(-z, -y, x);
+            if (n == 15) return new Coordinate(-z, -y,  x);
 
-            if (n == 16) return new Coordinate(x, y, z);
-            if (n == 17) return new Coordinate(x, z, -y);
-            if (n == 18) return new Coordinate(x, -y, -z);
-            if (n == 19) return new Coordinate(x, -z, y);
-            if (n == 20) return new Coordinate(-x, y, z);
-            if (n == 21) return new Coordinate(-x, z, -y);
-            if (n == 22) return new Coordinate(-x, -y, -z);
-            if (n == 23) return new Coordinate(-x, -z, y);
+            if (n == 16) return new Coordinate( x,  z,  y);
+            if (n == 17) return new Coordinate( x,  z, -y);
+            if (n == 18) return new Coordinate( x, -y, -z);
+            if (n == 19) return new Coordinate( x, -z,  y);
+            if (n == 20) return new Coordinate(-x,  y,  z);
+            if (n == 21) return new Coordinate(-x,  z, -y);
+            if (n == 22) return new Coordinate(-x, -z, -y);
+            if (n == 23) return new Coordinate(-x, -z,  y);
 
             return new Coordinate(0, 0, 0);
         }
@@ -140,7 +157,7 @@ namespace MyApp
             Console.WriteLine("Scanner {0} relative to {1}:  Coordinate {2}, {3}, {4}", id, relative_to_scanner, scanner_Coordinate.x, scanner_Coordinate.y, scanner_Coordinate.z);
         }
 
-        internal List<Coordinate> MoveBeaconsTo(Scanner target, int nRotation = 0)
+        internal List<Coordinate> MoveBeaconsTo(Scanner target)
         {
             List<Coordinate> Beacons = new List<Coordinate>();
 
@@ -162,7 +179,7 @@ namespace MyApp
             target.beacons_Coordinate.Clear();
             foreach (Coordinate crd in Beacons)
             {
-                Coordinate crd_new = Coordinate.RotateCoordinate(crd, nRotation);// this.relative_scanner_rotation_number);
+                Coordinate crd_new = Coordinate.RotateCoordinateOpposite(crd, this.relative_scanner_rotation_number);
                 target.beacons_Coordinate.Add(crd_new);
             }
 
@@ -172,12 +189,26 @@ namespace MyApp
     public class Program
     {
         // Answers for Data_p.txt  Part 1:      Part 2: 
-        static readonly string filePath = @".\..\..\..\Data_t.txt";
+        static string filePath = @".\..\..\..\Data_t.txt";
         static List<Scanner> scanners = new List<Scanner>();
         public static void Main(string[] args)
         {
             ParsingInputData();
             List<Coordinate> LDelta = new List<Coordinate>();
+
+            //Coordinate CCC = new Coordinate(1, 2, 3);
+            //Coordinate NNN = new Coordinate(0, 0, 0);
+            //for (int x = 0; x < 24; x++)
+            //    for (int y = 0; y < 24; y++)
+            //    {
+            //        NNN = Coordinate.RotateCoordinate(CCC, x);
+            //        NNN = Coordinate.RotateCoordinate(NNN, y);
+            //        if (CCC == NNN && x!=y)
+            //        {
+            //            Console.WriteLine("Rotation {0}  opposite {1}", x, y);
+            //        }
+            //    }
+
             
                 for (int i = 0; i < scanners.Count; i++)
                 for (int nScanner1Rotation = 0; nScanner1Rotation < 24; nScanner1Rotation++)
@@ -240,62 +271,63 @@ namespace MyApp
                     }
 
             List<Coordinate> Beacons = new List<Coordinate>();
-            scanners[2].MoveBeaconsTo(scanners[4],18);
-            scanners[4].MoveBeaconsTo(scanners[1],1);
-            scanners[3].MoveBeaconsTo(scanners[1],0);
-            
-            Beacons.AddRange(scanners[1].MoveBeaconsTo(scanners[0],0));
+            // FOR TEST CASE
+            //scanners[3].MoveBeaconsTo(scanners[1]);
+            //scanners[2].MoveBeaconsTo(scanners[4]);
+            //scanners[4].MoveBeaconsTo(scanners[1]);
+            //Beacons.AddRange(scanners[1].MoveBeaconsTo(scanners[0]));
+            // END TEST CASE
+            Beacons = MoveAllBeacons();
+            Beacons = MoveAllBeacons();
+            Beacons = MoveAllBeacons();
+            Beacons = MoveAllBeacons();
+            Beacons = MoveAllBeacons();
+            Beacons = MoveAllBeacons();
+
+            int nResOne = 0;
+            int nResTwo = 0;
+            foreach (Scanner S in scanners)
+            {
+                nResOne += S.beacons_Coordinate.Select(c => c).Distinct().Count();
+            }
 
             var w3 = Beacons.GroupBy(x => x).Where(g => g.Count() >= 2).Select(y => y).ToList();
             var w2 = Beacons.Select(c => c).Distinct().ToList();
-            Console.WriteLine("Count W3: {0}", w3.Count());
-            Console.WriteLine("Count W2: {0}", w2.Count());
-            //foreach (Coordinate crd in w3)
-            //{
-            //    crd.Print();
-            //}
+            //Console.WriteLine("Count W3: {0}", w3.Count());
 
+            //nResOne = w2.Count(); 
+            //filePath = @".\..\..\..\Data_t_res.txt";
+            //scanners.Clear();
+            //ParsingInputData();
+
+            //w2.AddRange(scanners[0].beacons_Coordinate);
+            //w3 = w2.GroupBy(x => x).Where(g => g.Count() >= 2).Select(y => y).ToList();
+            //w2 = w2.Select(c => c).Distinct().ToList();
+
+
+           // Console.WriteLine("Count W2: {0}", w2.Count());
 
             Console.WriteLine();
-            //scanners[0].scanner_Coordinate = new Coordinate(0, 0, 0);
-            NormalizeScannerCoordinate();
 
-            //foreach (Coordinate crd in LDelta)
-            //  Console.WriteLine("x={0}  y={1}  z={2}", crd.x, crd.y, crd.z);
-
-            Console.WriteLine("Part one: {0, 10:0}", 1);
-            Console.WriteLine("Part one: {0, 10:0}", 2);
+            Console.WriteLine("Part one: {0, 10:0}", nResOne);
+            Console.WriteLine("Part one: {0, 10:0}", nResTwo);
         }
-        private static void NormalizeScannerCoordinate()
+
+        private static List<Coordinate> MoveAllBeacons()
         {
-            foreach (Scanner S in scanners)
+            List<Coordinate> Beacons = new List<Coordinate>();
+            for(int i = scanners.Count - 1; i > 0; i--)
             {
-                if (S.id > 0 && S.relative_to_scanner > 0)
-                {
-                    //Coordinate normalCrd = new Coordinate(1, 1, 1);
-                    //normalCrd = Coordinate.RotateCoordinate(normalCrd, scanners[S.relative_to_scanner].rotation_number);
+                int n = scanners[i].relative_to_scanner;
+                scanners[i].MoveBeaconsTo(scanners[n]);
+                scanners[i].beacons_Coordinate.Clear();
 
-                    Coordinate crd = S.scanner_Coordinate;
-                    //crd = crd * normalCrd;
+                //if (n > i)
+                  //  scanners[n].MoveBeaconsTo(scanners[scanners[n].relative_to_scanner]);
 
-                    //crd = Coordinate.RotateCoordinate(crd, scanners[S.relative_to_scanner].relative_scanner_rotation_number);
-                    //crd = Coordinate.RotateCoordinate(crd, S.relative_scanner_rotation_number);
-                    //crd = Coordinate.RotateCoordinate(crd, S.rotation_number);
-                    Coordinate one = new Coordinate(1, 1, 1);
-
-                    Coordinate crd1 = Coordinate.RotateCoordinate(one, scanners[S.relative_to_scanner].relative_scanner_rotation_number);
-                    Coordinate crd2 = Coordinate.RotateCoordinate(one, S.relative_scanner_rotation_number);
-                    Coordinate crd3 = Coordinate.RotateCoordinate(one, S.rotation_number);
-
-                    crd = crd * crd1 * crd2 * crd3;
-
-                    crd = crd + scanners[S.relative_to_scanner].scanner_Coordinate;
-                    S.scanner_Coordinate = crd;
-                    S.relative_to_scanner = scanners[S.relative_to_scanner].relative_to_scanner;
-                }
-                S.Print();
             }
 
+            return scanners[0].beacons_Coordinate;
         }
 
         private static void ParsingInputData()
