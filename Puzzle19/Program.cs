@@ -191,6 +191,7 @@ namespace MyApp
         // Answers for Data_p.txt  Part 1:      Part 2: 
         static string filePath = @".\..\..\..\Data_t.txt";
         static List<Scanner> scanners = new List<Scanner>();
+        static Dictionary<int, List<int>> Order = new Dictionary<int, List<int>>();
         public static void Main(string[] args)
         {
             ParsingInputData();
@@ -210,10 +211,18 @@ namespace MyApp
             //    }
 
             
+            for (int a=0; a < scanners.Count; a++)
+            {
+                List<int> relative_scanners = new List<int>();
+                Order.Add(a, relative_scanners);
+            }
+
+            
                 for (int i = 0; i < scanners.Count; i++)
                 for (int nScanner1Rotation = 0; nScanner1Rotation < 24; nScanner1Rotation++)
-                    for (int k = i + 1; k < scanners.Count; k++)
+                    for (int k = 0; k < scanners.Count; k++)
                     {
+
                         //int i = 1;
                         if (k == i) continue;
                         //Console.WriteLine("i: {0},   k: {1}", i, k);
@@ -226,8 +235,23 @@ namespace MyApp
                             var query = LDelta.GroupBy(x => x).Where(g => g.Count() >= 12).Select(y => y).ToList();
                             if (query.Count() > 0)
                             {
+                                if(Order.ContainsKey(k))
+                                {
+                                    if(!Order[k].Contains(i))
+                                        Order[k].Add(i);
+                                }
+    
+                                //if (Order.ContainsKey(k))
+                                //{
+                                //    if (!Order[k].Contains(i))
+                                //        Order[k].Add(i);
+                                //}
 
-                                    Coordinate crd = query[0].Key;
+
+
+
+
+                                Coordinate crd = query[0].Key;
                                     if (scanners[k].relative_to_scanner == -1)
                                     {
                                         Coordinate normalCrd = new Coordinate(-1, -1, -1);
@@ -278,17 +302,20 @@ namespace MyApp
             //Beacons.AddRange(scanners[1].MoveBeaconsTo(scanners[0]));
             // END TEST CASE
             Beacons = MoveAllBeacons();
+            //Beacons = MoveAllBeacons2();
             Beacons = MoveAllBeacons();
             Beacons = MoveAllBeacons();
             Beacons = MoveAllBeacons();
             Beacons = MoveAllBeacons();
-            Beacons = MoveAllBeacons();
+            
+            Beacons = MoveAllBeacons2();
 
-            int nResOne = 0;
+            int nResOne = 0;// Beacons.Select(c => c).Distinct().Count();
             int nResTwo = 0;
             foreach (Scanner S in scanners)
             {
                 nResOne += S.beacons_Coordinate.Select(c => c).Distinct().Count();
+                Console.WriteLine("Scaner {0} = {1}", S.id, S.beacons_Coordinate.Select(c => c).Distinct().Count());
             }
 
             var w3 = Beacons.GroupBy(x => x).Where(g => g.Count() >= 2).Select(y => y).ToList();
@@ -315,15 +342,31 @@ namespace MyApp
 
         private static List<Coordinate> MoveAllBeacons()
         {
-            List<Coordinate> Beacons = new List<Coordinate>();
             for(int i = scanners.Count - 1; i > 0; i--)
             {
                 int n = scanners[i].relative_to_scanner;
                 scanners[i].MoveBeaconsTo(scanners[n]);
                 scanners[i].beacons_Coordinate.Clear();
 
-                //if (n > i)
-                  //  scanners[n].MoveBeaconsTo(scanners[scanners[n].relative_to_scanner]);
+            }
+
+            return scanners[0].beacons_Coordinate;
+        }
+
+
+        private static List<Coordinate> MoveAllBeacons2()
+        {
+
+            for (int i = Order.Count - 1; i >= 0; i--)
+            {
+                foreach(int related_scanners in Order[i])
+                {
+                    
+                    //int n = scanners[related_scanners].relative_to_scanner;
+                    scanners[i].MoveBeaconsTo(scanners[related_scanners]);
+                }
+                if(i!=0)
+                    scanners[i].beacons_Coordinate.Clear();
 
             }
 
