@@ -22,7 +22,7 @@ namespace MyApp
 
                 Coordinates newA = RotateCoordinate(A, nScanner1Rotation);
                 Coordinates newB = RotateCoordinate(B, nScanner2Rotation);
-                Coordinates Result = newA + newB;
+                Coordinates Result = newA - newB;
 
                 result.Add(Result);
             }
@@ -146,16 +146,18 @@ namespace MyApp
 
             foreach (Coordinates b_target_crd in target.beacons_coordinates)
             {
-                Coordinates new_b_crd = Coordinates.RotateCoordinate(b_target_crd, this.rotation_number);// this.relative_scanner_rotation_number);
+                Coordinates new_b_crd = Coordinates.RotateCoordinate(b_target_crd, this.relative_scanner_rotation_number);
                 Beacons.Add(new_b_crd);
             }
 
             foreach (Coordinates b_this_crd in this.beacons_coordinates)
             {
-                Coordinates new_b_crd = this.scanner_coordinates - Coordinates.RotateCoordinate(b_this_crd, this.relative_scanner_rotation_number) ;// this.rotation_number) + this.scanner_coordinates;
+                Coordinates new_b_crd = this.scanner_coordinates + Coordinates.RotateCoordinate(b_this_crd, this.rotation_number) ;// this.rotation_number) + this.scanner_coordinates;
                 Beacons.Add(new_b_crd);
             }
 
+            var w3 = Beacons.GroupBy(x => x).Where(g => g.Count() >= 2).Select(y => y).ToList();
+            var w2 = Beacons.Select(c => c).Distinct().ToList();
 
             target.beacons_coordinates.Clear();
             foreach(Coordinates crd in Beacons)
@@ -179,7 +181,7 @@ namespace MyApp
                     for (int k = i + 1; k < scanners.Count; k++)
                     {
                         //int i = 1;
-                        //if (k == i) continue;
+                        if (k == i) continue;
                         //Console.WriteLine("i: {0},   k: {1}", i, k);
                         //LDelta.AddRange(scanners[i].CompareCoordinates(scanners[k]));
                         //if(scanners[k].relative_to_scanner == -1 || scanners[i].scanner_coordinates == new Coordinates(0,0,0))
@@ -194,15 +196,15 @@ namespace MyApp
                                     Coordinates crd = query[0].Key;
                                     if (scanners[k].relative_to_scanner == -1)
                                     {
-                                        Coordinates normalCrd = new Coordinates(1, 1, 1);
-                                        normalCrd = Coordinates.RotateCoordinate(normalCrd, nScanner1Rotation);
-                                    if (scanners[k].relative_to_scanner > 0)
-                                        normalCrd = Coordinates.RotateCoordinate(normalCrd, scanners[k].relative_to_scanner);
-                                    crd = crd * normalCrd;
+                                        Coordinates normalCrd = new Coordinates(-1, -1, -1);
+                                    //    normalCrd = Coordinates.RotateCoordinate(normalCrd, nScanner1Rotation);
+                                    //if (scanners[k].relative_to_scanner > 0)
+                                    //    normalCrd = Coordinates.RotateCoordinate(normalCrd, scanners[k].relative_to_scanner);
+                                    //crd = crd * normalCrd;
                                     scanners[k].scanner_coordinates = crd;
                                         scanners[k].relative_to_scanner = i;
-                                        scanners[k].rotation_number = nScanner1Rotation;
-                                        scanners[k].relative_scanner_rotation_number = nScanner2Rotation;
+                                        scanners[k].rotation_number = nScanner2Rotation;
+                                        scanners[k].relative_scanner_rotation_number = nScanner1Rotation;
 
 
                                     Console.WriteLine("Scanner {0} - R{5}     vs Scanner {1} - R{6}   Coordinates {2}, {3}, {4}",
@@ -212,10 +214,10 @@ namespace MyApp
 
                                 if (scanners[i].relative_to_scanner == -1 && i!=0)
                                 {
-                                    Coordinates normalCrd = new Coordinates(1, 1, 1);
-                                    normalCrd = Coordinates.RotateCoordinate(normalCrd, nScanner2Rotation);
-                                    if (scanners[i].relative_to_scanner > 0)
-                                        normalCrd = Coordinates.RotateCoordinate(normalCrd, scanners[i].relative_to_scanner);
+                                    Coordinates normalCrd = new Coordinates(-1, -1, -1);
+                                    //normalCrd = Coordinates.RotateCoordinate(normalCrd, nScanner2Rotation);
+                                    //if (scanners[i].relative_to_scanner > 0)
+                                    //    normalCrd = Coordinates.RotateCoordinate(normalCrd, scanners[i].relative_to_scanner);
                                     crd = crd * normalCrd;
                                     scanners[i].scanner_coordinates = crd;
                                     scanners[i].relative_to_scanner = k;
@@ -242,8 +244,9 @@ namespace MyApp
             Beacons.AddRange(scanners[1].MoveBeaconsTo(scanners[0]));
 
             var w3 = Beacons.GroupBy(x => x).Where(g => g.Count() >= 2).Select(y => y).ToList();
-            //var w3 = Beacons.Select(c => c).Distinct();
-            Console.WriteLine("Count: {0}", w3.Count());
+            var w2 = Beacons.Select(c => c).Distinct().ToList();
+            Console.WriteLine("Count W3: {0}", w3.Count());
+            Console.WriteLine("Count W2: {0}", w2.Count());
             //foreach (Coordinates crd in w3)
             //{
             //    crd.Print();
