@@ -301,15 +301,23 @@ namespace MyApp
             //scanners[4].MoveBeaconsTo(scanners[1]);
             //Beacons.AddRange(scanners[1].MoveBeaconsTo(scanners[0]));
             // END TEST CASE
-            Beacons = MoveAllBeacons();
+            //Beacons = MoveAllBeacons();
             //Beacons = MoveAllBeacons2();
+            //Beacons = MoveAllBeacons();
+            //Beacons = MoveAllBeacons();
             Beacons = MoveAllBeacons();
             Beacons = MoveAllBeacons();
-            Beacons = MoveAllBeacons();
-            Beacons = MoveAllBeacons();
-            
-            Beacons = MoveAllBeacons2();
 
+            //for(int i = 0;i<100;i++)
+            //Beacons = MoveAllBeacons2();
+
+            //for (int i = scanners.Count-1; i >= 0; i--)
+            //{
+
+            //    List<int> VisitedNodes = new List<int>();
+            //    FindTheWay(i, 0, VisitedNodes);
+            //    Console.WriteLine();
+            //}
             int nResOne = 0;// Beacons.Select(c => c).Distinct().Count();
             int nResTwo = 0;
             foreach (Scanner S in scanners)
@@ -344,6 +352,7 @@ namespace MyApp
         {
             for(int i = scanners.Count - 1; i > 0; i--)
             {
+
                 int n = scanners[i].relative_to_scanner;
                 scanners[i].MoveBeaconsTo(scanners[n]);
                 scanners[i].beacons_Coordinate.Clear();
@@ -361,18 +370,43 @@ namespace MyApp
             {
                 foreach(int related_scanners in Order[i])
                 {
-                    
+                    //if (i < related_scanners) continue;
+
+                    //if (related_scanners == 18 || related_scanners == 5 || related_scanners == 4 || related_scanners == 6) continue;
+
                     //int n = scanners[related_scanners].relative_to_scanner;
                     scanners[i].MoveBeaconsTo(scanners[related_scanners]);
-                }
-                if(i!=0)
                     scanners[i].beacons_Coordinate.Clear();
+                }
+                //if(i!=0)
+                //    scanners[i].beacons_Coordinate.Clear();
 
             }
 
             return scanners[0].beacons_Coordinate;
         }
 
+
+        private static void FindTheWay(int nStart, int nEnd, List<int> VisitedNodes)
+        {
+            
+            foreach(int n in Order[nStart] )
+            {
+                if (VisitedNodes.Contains(n)) break;
+
+                VisitedNodes.Add(n);
+                Console.WriteLine("{0} -> {1}", nStart, n);
+
+                if (n == nEnd) return;
+                
+                else
+                {
+                    FindTheWay(n, nEnd, VisitedNodes);
+                }
+            }
+
+            return;
+        }
         private static void ParsingInputData()
         {
             int nScannerNum = 0;
