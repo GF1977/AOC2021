@@ -29,58 +29,40 @@ namespace MyApp
 
             return result;
         }
-        public static Coordinate RotateCoordinateOpposite(Coordinate crd, int n)
-        {
-            if (n == 1) return RotateCoordinate(crd, 3);
-            if (n == 5) return RotateCoordinate(crd, 7);
-            if (n == 9) return RotateCoordinate(crd, 11);
-            if (n == 13) return RotateCoordinate(crd, 15);
-            if (n == 17) return RotateCoordinate(crd, 19);
-            if (n == 21) return RotateCoordinate(crd, 23);
-
-            if (n == 3) return RotateCoordinate(crd, 1);
-            if (n == 7) return RotateCoordinate(crd, 5);
-            if (n == 11) return RotateCoordinate(crd, 9);
-            if (n == 15) return RotateCoordinate(crd, 13);
-            if (n == 19) return RotateCoordinate(crd, 17);
-            if (n == 23) return RotateCoordinate(crd, 21);
-
-            return RotateCoordinate(crd, n);
-        }
         public static Coordinate RotateCoordinate(Coordinate crd, int n)
         {
             int x = crd.x;
             int y = crd.y;
             int z = crd.z;
 
-            if (n < 0 && n > 23) throw new ArgumentOutOfRangeException();
+            if (n < 0 || n > 23) throw new ArgumentOutOfRangeException();
 
-            if (n ==  0) return new Coordinate( x,  y,  z);
-            if (n ==  1) return new Coordinate( y, -x,  z);
-            if (n ==  2) return new Coordinate(-x, -y,  z);
-            if (n ==  3) return new Coordinate(-y,  x,  z);
-            if (n ==  4) return new Coordinate( x,  y, -z);
-            if (n ==  5) return new Coordinate( y, -x, -z);
-            if (n ==  6) return new Coordinate(-y, -x, -z);
-            if (n ==  7) return new Coordinate(-y,  x, -z);
+            if (n == 0) return new Coordinate(x, y, z);
+            if (n == 1) return new Coordinate(x, -y, -z);
+            if (n == 2) return new Coordinate(x, z, -y);
+            if (n == 3) return new Coordinate(x, -z, y);
+            if (n == 4) return new Coordinate(-x, y, -z);
+            if (n == 5) return new Coordinate(-x, -y, z);
+            if (n == 6) return new Coordinate(-x, z, y);
+            if (n == 7) return new Coordinate(-x, -z, -y);
 
-            if (n ==  8) return new Coordinate( z,  y,  x);
-            if (n ==  9) return new Coordinate( z,  y, -x);
-            if (n == 10) return new Coordinate(-x,  y, -z);
-            if (n == 11) return new Coordinate(-z,  y,  x);
-            if (n == 12) return new Coordinate( x, -y,  z);
-            if (n == 13) return new Coordinate( z, -y, -x);
-            if (n == 14) return new Coordinate(-x, -y, -z);
-            if (n == 15) return new Coordinate(-z, -y,  x);
+            if (n == 8) return new Coordinate(y, -x, z);
+            if (n == 9) return new Coordinate(y, z, x);
+            if (n == 10) return new Coordinate(y, -z, -x);
+            if (n == 11) return new Coordinate(-y, x, z);
+            if (n == 12) return new Coordinate(-y, -x, -z);
+            if (n == 13) return new Coordinate(-y, z, -x);
+            if (n == 14) return new Coordinate(-y, -z, x);
+            if (n == 15) return new Coordinate(z, y, -x);
 
-            if (n == 16) return new Coordinate( x,  z,  y);
-            if (n == 17) return new Coordinate( x,  z, -y);
-            if (n == 18) return new Coordinate( x, -y, -z);
-            if (n == 19) return new Coordinate( x, -z,  y);
-            if (n == 20) return new Coordinate(-x,  y,  z);
-            if (n == 21) return new Coordinate(-x,  z, -y);
-            if (n == 22) return new Coordinate(-x, -z, -y);
-            if (n == 23) return new Coordinate(-x, -z,  y);
+            if (n == 16) return new Coordinate(z, x, y);
+            if (n == 17) return new Coordinate(z, -x, -y);
+            if (n == 18) return new Coordinate(-z, x, -y);
+            if (n == 19) return new Coordinate(-z, -x, y);
+            if (n == 20) return new Coordinate(-z, y, x);
+            if (n == 21) return new Coordinate(-z, -y, -x);
+            if (n == 22) return new Coordinate(y, x, -z);
+            if (n == 23) return new Coordinate(z, -y, x);
 
             return new Coordinate(0, 0, 0);
         }
@@ -130,6 +112,7 @@ namespace MyApp
         public int relative_to_scanner = -1;
         public int rotation_number = -1;
         public int relative_scanner_rotation_number = -1;
+        public bool isVisited = false;
 
         public List<Coordinate> beacons_Coordinate = new List<Coordinate>();
 
@@ -179,17 +162,18 @@ namespace MyApp
             target.beacons_Coordinate.Clear();
             foreach (Coordinate crd in Beacons)
             {
-                Coordinate crd_new = Coordinate.RotateCoordinateOpposite(crd, this.relative_scanner_rotation_number);
+                Coordinate crd_new = Coordinate.RotateCoordinate(crd, this.relative_scanner_rotation_number);
                 target.beacons_Coordinate.Add(crd_new);
             }
 
+            this.beacons_Coordinate.Clear();
             return Beacons;
         }
     }
     public class Program
     {
         // Answers for Data_p.txt  Part 1:      Part 2: 
-        static string filePath = @".\..\..\..\Data_t.txt";
+        static string filePath = @".\..\..\..\Data_p.txt";
         static List<Scanner> scanners = new List<Scanner>();
         static Dictionary<int, List<int>> Order = new Dictionary<int, List<int>>();
         public static void Main(string[] args)
@@ -247,10 +231,6 @@ namespace MyApp
                                 //        Order[k].Add(i);
                                 //}
 
-
-
-
-
                                 Coordinate crd = query[0].Key;
                                     if (scanners[k].relative_to_scanner == -1)
                                     {
@@ -267,26 +247,26 @@ namespace MyApp
 
                                     Console.WriteLine("Scanner {0} - R{5}     vs Scanner {1} - R{6}   Coordinate {2}, {3}, {4}",
                                             i, k, crd.x, crd.y, crd.z, nScanner1Rotation, nScanner2Rotation);
-                                        break;
+                                        //break;
                                     }
 
-                                if (scanners[i].relative_to_scanner == -1 && i!=0)
-                                {
-                                    Coordinate normalCrd = new Coordinate(-1, -1, -1);
-                                    //normalCrd = Coordinate.RotateCoordinate(normalCrd, nScanner2Rotation);
-                                    //if (scanners[i].relative_to_scanner > 0)
-                                    //    normalCrd = Coordinate.RotateCoordinate(normalCrd, scanners[i].relative_to_scanner);
-                                    crd = crd * normalCrd;
-                                    scanners[i].scanner_Coordinate = crd;
-                                    scanners[i].relative_to_scanner = k;
-                                    scanners[i].rotation_number = nScanner1Rotation;
-                                    scanners[i].relative_scanner_rotation_number = nScanner2Rotation;
+                                //if (scanners[i].relative_to_scanner == -1 && i!=0)
+                                //{
+                                //    Coordinate normalCrd = new Coordinate(-1, -1, -1);
+                                //    //normalCrd = Coordinate.RotateCoordinate(normalCrd, nScanner2Rotation);
+                                //    //if (scanners[i].relative_to_scanner > 0)
+                                //    //    normalCrd = Coordinate.RotateCoordinate(normalCrd, scanners[i].relative_to_scanner);
+                                //    crd = crd * normalCrd;
+                                //    scanners[i].scanner_Coordinate = crd;
+                                //    scanners[i].relative_to_scanner = k;
+                                //    scanners[i].rotation_number = nScanner1Rotation;
+                                //    scanners[i].relative_scanner_rotation_number = nScanner2Rotation;
 
 
-                                    Console.WriteLine("Scanner {0} - R{5}   vs Scanner {1} - R{6} :  Coordinate {2}, {3}, {4}",
-                                        i, k, crd.x, crd.y, crd.z, nScanner1Rotation, nScanner2Rotation);
-                                    break;
-                                }
+                                //    Console.WriteLine("Scanner {0} - R{5}   vs Scanner {1} - R{6} :  Coordinate {2}, {3}, {4}",
+                                //        i, k, crd.x, crd.y, crd.z, nScanner1Rotation, nScanner2Rotation);
+                                //    //break;
+                                //}
 
 
                             }
@@ -295,29 +275,22 @@ namespace MyApp
                     }
 
             List<Coordinate> Beacons = new List<Coordinate>();
-            // FOR TEST CASE
-            //scanners[3].MoveBeaconsTo(scanners[1]);
-            //scanners[2].MoveBeaconsTo(scanners[4]);
-            //scanners[4].MoveBeaconsTo(scanners[1]);
-            //Beacons.AddRange(scanners[1].MoveBeaconsTo(scanners[0]));
-            // END TEST CASE
-            //Beacons = MoveAllBeacons();
-            //Beacons = MoveAllBeacons2();
-            //Beacons = MoveAllBeacons();
-            //Beacons = MoveAllBeacons();
-            Beacons = MoveAllBeacons();
+
             Beacons = MoveAllBeacons();
 
-            //for(int i = 0;i<100;i++)
+            //for (int i = 0; i < 100; i++)
+            Beacons = MoveAllBeacons2();
+            Beacons = MoveAllBeacons2();
+            Beacons = MoveAllBeacons2();
+            //scanners[4].MoveBeaconsTo(scanners[1]); // TEST case
+            //Beacons = MoveAllBeacons2();
+            //scanners[18].MoveBeaconsTo(scanners[14]);
+            //scanners[14].MoveBeaconsTo(scanners[5]);
+            //scanners[5].MoveBeaconsTo(scanners[1]);
+
             //Beacons = MoveAllBeacons2();
 
-            //for (int i = scanners.Count-1; i >= 0; i--)
-            //{
 
-            //    List<int> VisitedNodes = new List<int>();
-            //    FindTheWay(i, 0, VisitedNodes);
-            //    Console.WriteLine();
-            //}
             int nResOne = 0;// Beacons.Select(c => c).Distinct().Count();
             int nResTwo = 0;
             foreach (Scanner S in scanners)
@@ -328,19 +301,6 @@ namespace MyApp
 
             var w3 = Beacons.GroupBy(x => x).Where(g => g.Count() >= 2).Select(y => y).ToList();
             var w2 = Beacons.Select(c => c).Distinct().ToList();
-            //Console.WriteLine("Count W3: {0}", w3.Count());
-
-            //nResOne = w2.Count(); 
-            //filePath = @".\..\..\..\Data_t_res.txt";
-            //scanners.Clear();
-            //ParsingInputData();
-
-            //w2.AddRange(scanners[0].beacons_Coordinate);
-            //w3 = w2.GroupBy(x => x).Where(g => g.Count() >= 2).Select(y => y).ToList();
-            //w2 = w2.Select(c => c).Distinct().ToList();
-
-
-           // Console.WriteLine("Count W2: {0}", w2.Count());
 
             Console.WriteLine();
 
@@ -370,13 +330,14 @@ namespace MyApp
             {
                 foreach(int related_scanners in Order[i])
                 {
-                    //if (i < related_scanners) continue;
-
-                    //if (related_scanners == 18 || related_scanners == 5 || related_scanners == 4 || related_scanners == 6) continue;
-
-                    //int n = scanners[related_scanners].relative_to_scanner;
+                    if (scanners[i].isVisited) continue;
                     scanners[i].MoveBeaconsTo(scanners[related_scanners]);
-                    scanners[i].beacons_Coordinate.Clear();
+                   // scanners[i].beacons_Coordinate.Clear();
+
+                    scanners[related_scanners].isVisited = false;
+                    scanners[i].isVisited = true;
+
+
                 }
                 //if(i!=0)
                 //    scanners[i].beacons_Coordinate.Clear();
@@ -392,16 +353,17 @@ namespace MyApp
             
             foreach(int n in Order[nStart] )
             {
-                if (VisitedNodes.Contains(n)) break;
-
-                VisitedNodes.Add(n);
-                Console.WriteLine("{0} -> {1}", nStart, n);
-
-                if (n == nEnd) return;
-                
-                else
+                if (!VisitedNodes.Contains(n))
                 {
-                    FindTheWay(n, nEnd, VisitedNodes);
+                    VisitedNodes.Add(n);
+                    Console.WriteLine("{0} -> {1}", nStart, n);
+
+                    if (n == nEnd) return;
+
+                    else
+                    {
+                        FindTheWay(n, nEnd, VisitedNodes);
+                    }
                 }
             }
 
