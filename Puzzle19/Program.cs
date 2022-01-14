@@ -174,6 +174,7 @@ namespace MyApp
     {
         // Answers for Data_p.txt  Part 1:      Part 2: 
         static string filePath = @".\..\..\..\Data_p.txt";
+        static List<(int,int)> Route = new List<(int,int)>();
         static List<Scanner> scanners = new List<Scanner>();
         static Dictionary<int, List<int>> Order = new Dictionary<int, List<int>>();
         public static void Main(string[] args)
@@ -275,13 +276,25 @@ namespace MyApp
                     }
 
             List<Coordinate> Beacons = new List<Coordinate>();
+            // FOR TEST CASE
+            //scanners[3].MoveBeaconsTo(scanners[1]);
+            //scanners[2].MoveBeaconsTo(scanners[4]);
+            //scanners[4].MoveBeaconsTo(scanners[1]);
+            //Beacons.AddRange(scanners[1].MoveBeaconsTo(scanners[0]));
+            // END TEST CASE
+            //Beacons = MoveAllBeacons();
+            //Beacons = MoveAllBeacons2();
 
             Beacons = MoveAllBeacons();
+            //Beacons = MoveAllBeacons();
+            //Beacons = MoveAllBeacons();
+            //Beacons = MoveAllBeacons();
+            //Beacons = MoveAllBeacons2();
 
             //for (int i = 0; i < 100; i++)
             Beacons = MoveAllBeacons2();
             Beacons = MoveAllBeacons2();
-            Beacons = MoveAllBeacons2();
+            Beacons = MoveAllBeacons3();
             //scanners[4].MoveBeaconsTo(scanners[1]); // TEST case
             //Beacons = MoveAllBeacons2();
             //scanners[18].MoveBeaconsTo(scanners[14]);
@@ -291,6 +304,9 @@ namespace MyApp
             //Beacons = MoveAllBeacons2();
 
 
+            //List<int> VisitedNodes = new List<int>();
+            //FindTheWay(18, 0, VisitedNodes);
+
             int nResOne = 0;// Beacons.Select(c => c).Distinct().Count();
             int nResTwo = 0;
             foreach (Scanner S in scanners)
@@ -299,8 +315,24 @@ namespace MyApp
                 Console.WriteLine("Scaner {0} = {1}", S.id, S.beacons_Coordinate.Select(c => c).Distinct().Count());
             }
 
+            //VisitedNodes = new List<int>();
+            //FindTheWay(18, 0, VisitedNodes);
+
             var w3 = Beacons.GroupBy(x => x).Where(g => g.Count() >= 2).Select(y => y).ToList();
             var w2 = Beacons.Select(c => c).Distinct().ToList();
+            //Console.WriteLine("Count W3: {0}", w3.Count());
+
+            //nResOne = w2.Count();
+            //filePath = @".\..\..\..\Data_t_res.txt";
+            //scanners.Clear();
+            //ParsingInputData();
+
+            //w2.AddRange(scanners[0].beacons_Coordinate);
+            //w3 = w2.GroupBy(x => x).Where(g => g.Count() >= 2).Select(y => y).ToList();
+            //w2 = w2.Select(c => c).Distinct().ToList();
+
+
+            // Console.WriteLine("Count W2: {0}", w2.Count());
 
             Console.WriteLine();
 
@@ -348,27 +380,50 @@ namespace MyApp
         }
 
 
-        private static void FindTheWay(int nStart, int nEnd, List<int> VisitedNodes)
+        private static List<Coordinate> MoveAllBeacons3()
         {
-            
-            foreach(int n in Order[nStart] )
+
+            for (int i = Order.Count - 1; i >= 0; i--)
+            {
+                List<int> VisitedNodes = new List<int>();
+                FindTheWay(i, 0, VisitedNodes);
+                foreach(var v in Route)
+                {
+                    scanners[v.Item1].MoveBeaconsTo(scanners[v.Item2]);
+                    scanners[v.Item1].beacons_Coordinate.Clear();
+                }
+                Route.Clear();
+            }
+
+            return scanners[0].beacons_Coordinate;
+        }
+
+        private static bool FindTheWay(int nStart, int nEnd, List<int> VisitedNodes)
+        {
+
+            if (nStart == nEnd) return true;
+            if (VisitedNodes.Contains(nStart)) return false;
+
+            VisitedNodes.Add(nStart);
+
+            foreach (int n in Order[nStart])
             {
                 if (!VisitedNodes.Contains(n))
                 {
-                    VisitedNodes.Add(n);
-                    Console.WriteLine("{0} -> {1}", nStart, n);
+                    bool reached = FindTheWay(n, nEnd, VisitedNodes);
 
-                    if (n == nEnd) return;
-
-                    else
+                    if (reached)
                     {
-                        FindTheWay(n, nEnd, VisitedNodes);
+
+                        //Console.WriteLine("{0} -> {1}", nStart, n);
+                        Route.Insert(0,(nStart, n));
+                        return true;
                     }
                 }
             }
-
-            return;
+            return false;
         }
+
         private static void ParsingInputData()
         {
             int nScannerNum = 0;
