@@ -23,6 +23,27 @@ namespace MyApp
             result.Add(Result);
             return result;
         }
+        public static Coordinate RotateCoordinateOpposite(Coordinate crd, int n)
+        {
+            if (n == 2) return RotateCoordinate(crd, 3);
+            if (n == 8) return RotateCoordinate(crd, 11);
+            if (n == 9) return RotateCoordinate(crd, 16);
+            if (n == 10) return RotateCoordinate(crd, 18);
+            if (n == 13) return RotateCoordinate(crd, 19);
+            if (n == 14) return RotateCoordinate(crd, 17);
+            if (n == 15) return RotateCoordinate(crd, 20);
+
+            if (n == 3) return RotateCoordinate(crd, 2);
+            if (n == 11) return RotateCoordinate(crd, 8);
+            if (n == 16) return RotateCoordinate(crd, 9);
+            if (n == 17) return RotateCoordinate(crd, 14);
+            if (n == 18) return RotateCoordinate(crd, 10);
+            if (n == 19) return RotateCoordinate(crd, 13);
+            if (n == 20) return RotateCoordinate(crd, 15);
+
+            return RotateCoordinate(crd, n);
+        }
+
         public static Coordinate RotateCoordinate(Coordinate crd, int n)
         {
             int x = crd.x;
@@ -69,12 +90,29 @@ namespace MyApp
         {
             return new Coordinate(A.x + B.x, A.y + B.y, A.z + B.z);
         }
+
+        public static bool operator ==(Coordinate A, Coordinate B)
+        {
+            if (A.x == B.x && A.y == B.y && A.z == B.z)
+                return true;
+            else
+                return false;
+        }
+        public static bool operator !=(Coordinate A, Coordinate B)
+        {
+            return !(A == B);
+        }
+        internal void Print()
+        {
+            Console.WriteLine("Coordinate {0}, {1}, {2}", x, y, z);
+        }
     }
     public class Scanner
     {
         public int id { get; }
-        public Coordinate scanner_Coordinate = new Coordinate(0, 0, 0);
-        public int relative_to_scanner = -1;
+        public Coordinate AbsoluteCrd = new Coordinate(0, 0, 0);
+        public Coordinate relativeCrd = new Coordinate(0, 0, 0);
+        //public int relative_to_scanner = -1;
         public int rotation_number = -1;
         public bool isVisited = false;
 
@@ -99,16 +137,27 @@ namespace MyApp
             return LDelta;
         }
 
+        internal void Print()
+        {
+            Console.WriteLine("Scanner {0} :  Coordinate {1}, {2}, {3}", id,  AbsoluteCrd.x, AbsoluteCrd.y, AbsoluteCrd.z);
+        }
+
+
+
+
         internal List<Coordinate> MoveBeaconsTo(Scanner target)
         {
             List<Coordinate> Beacons = new List<Coordinate>();
 
             foreach (Coordinate b_target_crd in target.beacons_Coordinate)
+            {
+               // Coordinate new_b_crd = Coordinate.RotateCoordinate(b_target_crd, this.relative_scanner_rotation_number);
                 Beacons.Add(b_target_crd);
+            }
 
             foreach (Coordinate b_this_crd in this.beacons_Coordinate)
             {
-                Coordinate new_b_crd = this.scanner_Coordinate + Coordinate.RotateCoordinate(b_this_crd, this.rotation_number);
+                Coordinate new_b_crd = this.relativeCrd + Coordinate.RotateCoordinate(b_this_crd, this.rotation_number);
                 Beacons.Add(new_b_crd);
             }
 
@@ -118,17 +167,20 @@ namespace MyApp
             target.beacons_Coordinate.Clear();
             foreach (Coordinate crd in Beacons)
             {
+                //Coordinate crd_new = Coordinate.RotateCoordinateOpposite(crd, this.relative_scanner_rotation_number);
                 target.beacons_Coordinate.Add(crd);
             }
 
-            this.beacons_Coordinate.Clear();
             return Beacons;
         }
+    
     }
     public class Program
     {
         // Answers for Data_p.txt  Part 1: 313     Part 2: 
-        static string filePath = @".\..\..\..\Data_p.txt";
+        //static string filePath = @".\..\..\..\Data_p_alternative.txt";
+        //static string filePath = @".\..\..\..\Data_p.txt";
+        static string filePath = @".\..\..\..\Data_t.txt";
         static List<(int,int)> Route = new List<(int,int)>();
         static List<Scanner> scanners = new List<Scanner>();
         static Dictionary<int, List<int>> Order = new Dictionary<int, List<int>>();
@@ -137,15 +189,33 @@ namespace MyApp
             ParsingInputData();
             List<Coordinate> LDelta = new List<Coordinate>();
 
-          
+            //for (int x = 0; x < 24; x++)
+                for (int y = 0; y < 24; y++)
+                {
+                    Coordinate CCC = new Coordinate(1, 2, 3);
+                    Coordinate NNN = new Coordinate(0, 0, 0);
+
+                    NNN = Coordinate.RotateCoordinate(CCC, y);
+                    NNN = Coordinate.RotateCoordinateOpposite(NNN, y);
+                    if (CCC != NNN)
+                    {
+                        Console.WriteLine("Rotation {0}  opposite ", y);
+                    }
+                }
+
+
+
             for (int a=0; a < scanners.Count; a++)
             {
                 List<int> relative_scanners = new List<int>();
                 Order.Add(a, relative_scanners);
             }
 
+            scanners[0].AbsoluteCrd = new Coordinate(0,0,0);
+            scanners[0].rotation_number = 0;
+
             for (int i = 0; i < scanners.Count; i++)
-                for (int k = 0; k < scanners.Count; k++)
+                for (int k = 1; k < scanners.Count; k++)
                 {
                     if (k == i) continue;
                     for (int nSRotation = 0; nSRotation < 24; nSRotation++)
@@ -156,17 +226,13 @@ namespace MyApp
                         if (query.Count() > 0)
                         {
                             if (Order.ContainsKey(k))
-                            {
                                 if (!Order[k].Contains(i))
                                     Order[k].Add(i);
-                            }
 
-                            Coordinate crd = query[0].Key;
-                            if (scanners[k].relative_to_scanner == -1)
+                            if (scanners[k].rotation_number == -1)
                             {
-                                Coordinate normalCrd = new Coordinate(-1, -1, -1);
-                                scanners[k].scanner_Coordinate = crd;
-                                scanners[k].relative_to_scanner = i;
+                                Coordinate crd = query[0].Key;
+                                scanners[k].relativeCrd = crd;
                                 scanners[k].rotation_number = nSRotation;
 
                                 Console.WriteLine("Scanner {0} vs Scanner {1} - R{5}   Coordinate {2}, {3}, {4}",
@@ -177,8 +243,13 @@ namespace MyApp
                 }
 
             List<Coordinate> Beacons = new List<Coordinate>();
-            Beacons = MoveAllBeacons3();
 
+            Beacons = MoveAllBeacons3();
+            for (int i = 0; i < scanners.Count; i++)
+            {
+                UpdateScannerCoordinates(i);
+            }
+            
             int nResOne = 0;
             int nResTwo = 0;
             foreach (Scanner S in scanners)
@@ -187,18 +258,42 @@ namespace MyApp
                 Console.WriteLine("Scaner {0} = {1}", S.id, S.beacons_Coordinate.Select(c => c).Distinct().Count());
             }
 
-            var w3 = Beacons.GroupBy(x => x).Where(g => g.Count() >= 2).Select(y => y).ToList();
-            var w2 = Beacons.Select(c => c).Distinct().ToList();
-            Console.WriteLine("Count W3: {0}", w3.Count());
+            var w2 = Beacons.GroupBy(x => x).Where(g => g.Count() >= 2).Select(y => y).ToList();
+
+
+            var w_unique = Beacons.Select(c => c).Distinct().ToList();
             Console.WriteLine("Count W2: {0}", w2.Count());
-            Console.WriteLine("Answer: {0}", w2.Count()- w3.Count());
+            Console.WriteLine("Count W_Unique: {0}", w_unique.Count());
+            //Console.WriteLine("Answer: {0}", w2.Count()- w3.Count());
 
             Console.WriteLine();
 
             Console.WriteLine("Part one: {0, 10:0}", nResOne);
             Console.WriteLine("Part one: {0, 10:0}", nResTwo);
         }
+        private static void UpdateScannerCoordinates(int id)
+        {
+            Scanner target = scanners[id];
 
+                List<int> VisitedNodes = new List<int>();
+                FindTheWay(id, 0, VisitedNodes);
+                Coordinate new_scanner_crdB = target.relativeCrd;
+                foreach (var v in Route)
+                {
+                                // new_scanner_crdB = Coordinate.RotateCoordinate(target.AbsoluteCrd, target.rotation_number);
+                            new_scanner_crdB = Coordinate.RotateCoordinate(new_scanner_crdB, scanners[v.Item2].rotation_number);
+                            new_scanner_crdB = scanners[v.Item2].relativeCrd + new_scanner_crdB;
+                //target.rotation_number = scanners[v.Item2].rotation_number;
+            }
+
+                
+                target.AbsoluteCrd = new_scanner_crdB;
+
+            Route.Clear();
+            
+            target.Print();
+
+        }
         private static List<Coordinate> MoveAllBeacons3()
         {
 
