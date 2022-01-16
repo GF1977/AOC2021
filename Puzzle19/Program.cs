@@ -81,6 +81,7 @@
         }
         public static Coordinate operator -(Coordinate A, Coordinate B)
         {
+            //return new Coordinate(Math.Abs(A.x - B.x), Math.Abs(A.y - B.y), Math.Abs(A.z - B.z));
             return new Coordinate(A.x - B.x, A.y - B.y, A.z - B.z);
         }
 
@@ -105,6 +106,7 @@
         public bool isVisited = false;
 
         public List<Coordinate> beacons_Coordinate = new List<Coordinate>();
+        public List<(int relative_to_scanner, int rotation_number)> relations = new List<(int ,int )>();
 
         public Scanner(int id)
         {
@@ -167,8 +169,8 @@
     {
         // Answers for Data_p.txt  Part 1: 313     Part 2: 
         //static string filePath = @".\..\..\..\Data_p_alternative.txt";
-        //static string filePath = @".\..\..\..\Data_p.txt";
-        static string filePath = @".\..\..\..\Data_t.txt";
+        static string filePath = @".\..\..\..\Data_p.txt";
+        //static string filePath = @".\..\..\..\Data_t.txt";
         static List<(int, int)> Route = new List<(int, int)>();
         static List<Scanner> scanners = new List<Scanner>();
         static Dictionary<int, List<int>> Order = new Dictionary<int, List<int>>();
@@ -201,23 +203,20 @@
                                 if (!Order[k].Contains(i))
                                     Order[k].Add(i);
 
-                            if (scanners[k].rotation_number == -1)
+                            //if (scanners[k].rotation_number == -1)
                             {
                                 Coordinate crd = query[0].Key;
                                 scanners[k].relativeCrd = crd;
-                                scanners[k].rotation_number = nSRotation;
-                                scanners[k].relative_to_scanner = i;
-
-                                Console.WriteLine("Scanner {0} vs Scanner {1} - R{5}   Coordinate {2}, {3}, {4}",
-                                        i, k, crd.x, crd.y, crd.z, nSRotation);
+                                scanners[k].relations.Add((relative_to_scanner:i, rotation_number:nSRotation));
+                                Console.WriteLine("Scanner {0, 2:0} vs Scanner {1,2:0} - R{5,5:0} Matches: {6,2:0}  Coordinate {2,5:0}, {3,5:0}, {4,5:0}", i, k, crd.x, crd.y, crd.z, nSRotation, query[0].Count());
                             }
                         }
                     }
                 }
+            Console.WriteLine();
+            List <Coordinate> Beacons = new List<Coordinate>();
 
-            List<Coordinate> Beacons = new List<Coordinate>();
-
-            //Beacons = MoveAllBeacons3();
+            Beacons = MoveAllBeacons3();
             for (int i = scanners.Count - 1; i >=0; i--)
             {
                 UpdateScannerCoordinates(i);
@@ -234,7 +233,7 @@
             var w2 = Beacons.GroupBy(x => x).Where(g => g.Count() >= 2).Select(y => y).ToList();
 
 
-            var w_unique = Beacons.Select(c => c).Distinct().ToList();
+             var w_unique = Beacons.Select(c => c).Distinct().ToList();
             Console.WriteLine("Count W2: {0}", w2.Count());
             Console.WriteLine("Count W_Unique: {0}", w_unique.Count());
             //Console.WriteLine("Answer: {0}", w2.Count()- w3.Count());
