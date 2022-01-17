@@ -12,18 +12,11 @@
             this.z = z;
         }
 
-        public static Coordinate CompareTwoCoordinate(Coordinate A, Coordinate B, int nSRotation)
+        public Coordinate Rotate(int n)
         {
-
-            return (A - RotateCoordinate(B, nSRotation));
-
-        }
-
-        public static Coordinate RotateCoordinate(Coordinate crd, int n)
-        {
-            int x = crd.x;
-            int y = crd.y;
-            int z = crd.z;
+            int x = this.x;
+            int y = this.y;
+            int z = this.z;
 
             if (n < 0 || n > 23) throw new ArgumentOutOfRangeException();
 
@@ -77,7 +70,9 @@
 
             foreach (Coordinate beaconA in this.beacons_Coordinate)
                 foreach (Coordinate beaconB in Target.beacons_Coordinate)
-                    LDelta.Add(Coordinate.CompareTwoCoordinate(beaconA, beaconB, nSRotation));
+                    LDelta.Add(beaconA - beaconB.Rotate(nSRotation));
+
+             
 
             var query = LDelta.GroupBy(x => x).Where(g => g.Count() >= 12).Select(y => y).ToList();
 
@@ -96,15 +91,33 @@
         // Answers for Data_p.txt               Part 1: 313     Part 2: 
         // Answers for Data_p_alternative.txt   Part 1: 372     Part 2: 
 
-        //static string filePath = @".\..\..\..\Data_p_alternative.txt";
-        static string filePath = @".\..\..\..\Data_p.txt";
-        //static string filePath = @".\..\..\..\Data_t.txt";
         static List<Scanner> scanners = new List<Scanner>();
 
         public static void Main(string[] args)
         {
-            ParsingInputData();
+            scanners.Clear();
+            ParsingInputData(@".\..\..\..\Data_t.txt");
+            int nResOne = SolvePartOne();
+            Console.WriteLine("Part one: {0, 10:0}", nResOne);
 
+            scanners.Clear();
+            ParsingInputData(@".\..\..\..\Data_p.txt");
+             nResOne = SolvePartOne();
+            Console.WriteLine("Part one: {0, 10:0}", nResOne);
+
+            scanners.Clear();
+            ParsingInputData(@".\..\..\..\Data_p_alternative.txt");
+             nResOne = SolvePartOne();
+            Console.WriteLine("Part one: {0, 10:0}", nResOne);
+
+
+
+
+            //Console.WriteLine("Part one: {0, 10:0}", nResTwo);
+        }
+
+        private static int SolvePartOne()
+        {
             while (scanners.Count != 1)
             {
                 for (int k = 1; k < scanners.Count; k++)
@@ -115,7 +128,7 @@
                         {
                             foreach (Coordinate c in scanners[k].beacons_Coordinate)
                             {
-                                Coordinate newC = Coordinate.RotateCoordinate(c, nSRotation) + key;
+                                Coordinate newC = c.Rotate(nSRotation) + key;
                                 scanners[0].beacons_Coordinate.Add(newC);
                             }
                             scanners.RemoveAt(k);
@@ -124,13 +137,10 @@
                     }
             }
 
-            int nResOne = scanners[0].beacons_Coordinate.Select(c => c).Distinct().ToList().Count();
-            int nResTwo = 0;
-
-            Console.WriteLine("Part one: {0, 10:0}", nResOne);
-            Console.WriteLine("Part one: {0, 10:0}", nResTwo);
+            return scanners[0].beacons_Coordinate.Select(c => c).Distinct().ToList().Count();
         }
-        private static void ParsingInputData()
+
+        private static void ParsingInputData(string filePath)
         {
             Scanner sc = new Scanner();
 
