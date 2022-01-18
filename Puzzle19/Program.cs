@@ -52,7 +52,7 @@
     }
     public class Scanner
     {
-        public List<Crd> beacons_coordinates = new List<Crd>();
+        public HashSet<Crd> beacons_coordinates = new HashSet<Crd>();
         public bool FindOverlappingScanner(Scanner Target, int nSRotation, out Crd relativeDistance )
         {
             List<Crd> Overlapping = new List<Crd>();
@@ -116,8 +116,7 @@
                 for (int k = i+1; k < scannersCoordinates.Count; k++)
                 {
                     int n = scannersCoordinates[i].ManhattanDistance(scannersCoordinates[k]);
-                    if (n > nMax)
-                        nMax = n;
+                    nMax = (n > nMax) ? n:nMax; 
                 }
             return nMax;
         }
