@@ -2,21 +2,27 @@
 {
     public class Program
     {
-        static readonly int BORDER = 2;
-        // Answers for Data_p.txt  Part 1:      Part 2: 
-        static readonly string filePath = @".\..\..\..\Data_p.txt";
+        static readonly int BORDER = 6;
+        // Answers for Data_p.txt  Part 1: 5391     Part 2: 
+        static readonly string filePath = @".\..\..\..\Data_P.txt";
         static List<string> InputData = new List<string>();
         static char[] IEA;  //image enhancement algorithm
         static char[,] field_current;
         static char[,] field_new;
+        static int nIteration;
         public static void Main(string[] args)
         {
             
             ParsingInputData();
             //DrawField();
+            nIteration = 1;
             EnhanceInmage();
+            DrawField();
             int a =GetEnabledPixels();
+            
+            nIteration++;
             EnhanceInmage();
+            DrawField();
             int b = GetEnabledPixels();
 
             //for (int i = 0; i < 60; i++)
@@ -24,7 +30,7 @@
             //    Console.WriteLine("Pixels = {0}", GetEnabledPixels());
             //    EnhanceInmage();
             //}
-            //DrawField();
+            
 
             Console.WriteLine("Part one: {0, 10:0}", a);
             Console.WriteLine("Part one: {0, 10:0}", b);
@@ -35,18 +41,23 @@
             int nFieldSize = field_current.GetLength(0);
             Console.WriteLine("Scanning area in [{0} ; {1})", 1, nFieldSize - 1);
 
+            int nDelta = 0;
+
+            if (nIteration % 2 == 0)
+                nDelta = 2;
+            else
+                nDelta = 0;
+
             field_new = new char[nFieldSize + BORDER*2, nFieldSize + BORDER*2];
 
-            for (int x = 1; x < nFieldSize-1; x++)
-                for (int y = 1; y < nFieldSize-1; y++)
+            for (int x = nDelta; x < nFieldSize - nDelta; x++)
+                for (int y = nDelta; y < nFieldSize - nDelta; y++)
                 {
                     char newPixel = GetBlockSumm(x, y);
 
-                    field_new[y+ BORDER, x+ BORDER] = newPixel;
+                    field_new[y + BORDER, x + BORDER] = newPixel;
                 }
             SwapTheFileds();
-            //DrawField();
-
         }
 
         private static void SwapTheFileds()
@@ -65,8 +76,10 @@
             int  nRes = 0;
             int nFieldSize = field_current.GetLength(0);
 
-            for (int x = 0; x < nFieldSize; x++)
-                for (int y = 0; y < nFieldSize; y++)
+            int nDelta = nIteration * BORDER + 2;
+
+            for (int x = nDelta; x < nFieldSize - nDelta; x++)
+                for (int y = nDelta; y < nFieldSize - nDelta; y++)
                     if (field_current[x, y] == '#') nRes++;
 
             return nRes;
@@ -79,14 +92,12 @@
             {
                 for (int x = xCenter - 1; x <= xCenter + 1; x++)
                 {
-                    sRes += (field_current[y, x] == '#') ? "1" : "0";
-                    char c = (field_current[y, x] == '#') ? '#' : '.';
-                   // Console.Write(c);
+                    if (x < 0 || x >= field_current.GetLength(0) || y < 0 || y >= field_current.GetLength(0))
+                        sRes += "0";
+                    else
+                        sRes += (field_current[y, x] == '#') ? "1" : "0";
                 }
-
-                //Console.WriteLine();
             }
-            //Console.WriteLine();
             int nIndex = Convert.ToInt32(sRes, 2);
 
             return IEA[nIndex];
