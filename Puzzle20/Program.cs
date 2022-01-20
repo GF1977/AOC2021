@@ -1,156 +1,92 @@
 ﻿namespace MyApp
 {
+    public class Field
+    {
+        private char[,] field;
+        public int GetSize() =>  field.GetLength(0);
+        public void Set(int x, int y, char value) => field[x + 1, y + 1] = value; // + 1  to keep the frame (1 pixel around the image) empty
+        public char Get(int x, int y) => field[x, y];
+        public Field(int n) => field = new char[n,n];
+    }
     public class Program
     {
-        // Answers for Data_p.txt  Part 1: 5391     Part 2: 
-        static readonly string filePath = @".\..\..\..\Data_p1.txt";
-        static List<string> InputData = new List<string>();
-        static char[] IEA;  //image enhancement algorithm
-        static char[,] field_current;
-        static char[,] field_new;
-        static int nIteration = 0;
+        // Answers for Data_t.txt   Part 1:   35     Part 2:  3351
+        // Answers for Data_p.txt   Part 1: 5391     Part 2: 16383 
+        // Answers for Data_p0.txt  Part 1: 5682     Part 2: 17628 
+        static readonly string filePath = @".\..\..\..\Data_p.txt";
+        static string IEA;  //image enhancement algorithm
+
+        static Field FieldA;
+        static Field FieldB;
+        static int nEnabledPixels = 0;
+        static int Space = 0; // this is to emulate the infinite space around the image. 0 means "."   1 means "#"
 
         public static void Main(string[] args)
         {
-            
+            EnhanceImage(2);
+            Console.WriteLine("Part one: {0, 10:0}", nEnabledPixels);
+
+            EnhanceImage(50);
+            Console.WriteLine("Part one: {0, 10:0}", nEnabledPixels);
+        }
+        public static void EnhanceImage(int nRepeats)
+        {
             ParsingInputData();
-            //DrawField();
-            EnhanceInmage();
-            //DrawField();
-            
-            EnhanceInmage();
-            //DrawField();
-            int a = GetEnabledPixels();
-
-            for (int i = 0; i < 48; i++)
+            for (int i = 0; i < nRepeats; i++)
             {
-                 EnhanceInmage();
-               // DrawField();
+                nEnabledPixels = 0;
+                FieldB = new Field(FieldA.GetSize() + 2); // 2 for the frame of empty pixels around the main picture
 
+                for (int x = 0; x < FieldA.GetSize(); x++)
+                    for (int y = 0; y < FieldA.GetSize(); y++)
+                        FieldB.Set(y, x, CalculateNewPixel(x, y)); 
+
+                FieldA = FieldB;
+                Space = 1 - Space; // to switch the value from 0 to 1 and from 1 to 0  to show the space around is filled by 0 or 1
             }
-            int b = GetEnabledPixels();
-            //DrawField();
-
-            Console.WriteLine("Part one: {0, 10:0}", a);
-            Console.WriteLine("Part one: {0, 10:0}", b);
         }
-
-        public static void EnhanceInmage()
-        {
-            int nFieldSize = field_current.GetLength(0);
-
-
-            field_new = new char[nFieldSize + 2, nFieldSize + 2];
-
-            for (int x = 0; x < nFieldSize ; x++)
-                for (int y = 0; y < nFieldSize; y++)
-                {
-                    field_new[y + 1, x + 1] = CalculateNewPixel(x, y);
-                }
-            SwapTheFileds();
-            nIteration = 1 - nIteration;
-        }
-
-        private static void SwapTheFileds()
-        {
-            int nFieldSize = field_new.GetLength(0);
-
-            field_current = new char[nFieldSize, nFieldSize];
-            for (int x = 0; x < nFieldSize; x++)
-                for (int y = 0; y < nFieldSize; y++)
-                    field_current[x, y] = field_new[x, y];
-
-        }
-
-        private static int GetEnabledPixels()
-        {
-            int  nRes = 0;
-            int nFieldSize = field_current.GetLength(0);
-
-
-            for (int x = 0; x < nFieldSize; x++)
-                for (int y = 0; y < nFieldSize; y++)
-                    if (field_current[x, y] == '#') nRes++;
-
-            return nRes;
-        }
-
         private static char CalculateNewPixel(int xCenter, int yCenter)
         {
             string sRes = string.Empty;
-            int nFieldSize = field_current.GetLength(0);
-            for (int y = yCenter - 1; y <= yCenter + 1; y++)
-            {
+            for (int y = yCenter - 1; y <= yCenter + 1; y++)     
                 for (int x = xCenter - 1; x <= xCenter + 1; x++)
                 {
-                    if (x < 1 || x >= nFieldSize - 1 || y < 1 || y >= nFieldSize  - 1)
+                    // if the x or y outside the image (in the space or in the frame)
+                    if (x < 1 || x >= FieldA.GetSize() - 1 || y < 1 || y >= FieldA.GetSize() - 1)
                     {
-
-                        if(IEA[0] == '.' || nIteration == 0)
+                        // IEA[0] is important; 9 empty pixel will generate "."  , 9 enabled pixels will generate "#"
+                        if(IEA[0] == '.' || Space == 0)
                             sRes += "0";
 
-                        if (IEA[0] == '#'  && nIteration == 1)
+                        if (IEA[0] == '#' && Space == 1)
                             sRes += "1";
-                        
-                            
                     }
                     else
-                        sRes += (field_current[y, x] == '#') ? "1" : "0";
+                        sRes += (FieldA.Get(y, x) == '#') ? "1" : "0";
                 }
-            }
+
             int nIndex = Convert.ToInt32(sRes, 2);
+            if (IEA[nIndex] == '#')
+                nEnabledPixels++;
 
             return IEA[nIndex];
         }
-
-        private static void DrawField()
-        {
-            int nFieldSize = field_current.GetLength(0);
-
-            for (int x = 0; x < nFieldSize; x++)
-            {
-                for (int y = 0; y < nFieldSize; y++)
-                {
-                    char c = (field_current[x,y] == '#')? '#':'.';
-                    Console.Write(c);
-                }
-
-                Console.WriteLine();
-            }
-            Console.WriteLine();
-        }
-
-        public static void UpdateField()
-        {
-            int nFieldSize = InputData.First().Length;
-            field_current = new char[nFieldSize + 2, nFieldSize + 2];
-            int x = 1;
-            int y = 1;
-            foreach (string row in InputData)
-            {
-                foreach (char c in row)
-                {
-                    field_current[y, x] = c;
-                    x++;
-                }
-                x = 1;
-                y++;
-            }
-        }
-
         private static void ParsingInputData()
         {
-            using (StreamReader file = new(filePath))
-                while (!file.EndOfStream)
-                {
-                    string line = file.ReadLine();
-                    InputData.Add(line);
-                }
+            StreamReader file = new(filePath);
+            IEA = file.ReadLine();
+            file.ReadLine();  // empty one - ignoring
 
-            IEA = InputData.First().ToCharArray();
-            InputData.RemoveAt(0);
-            InputData.RemoveAt(0);
-            UpdateField();
+            List<string> InputData = new List<string>();
+            while (!file.EndOfStream)
+                InputData.Add(file.ReadLine());
+
+            int nFieldSize = InputData.First().Length;
+             FieldA = new Field(nFieldSize + 2); // frame
+
+            for (int x = 0;x < nFieldSize;x++)
+                for(int y = 0;y < nFieldSize;y++)
+                    FieldA.Set(y, x, InputData[y][x]);
         }
     }
 }
