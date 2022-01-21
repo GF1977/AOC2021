@@ -3,46 +3,47 @@
     public class Field
     {
         private char[,] field;
+        public static string IEA;  //image enhancement algorithm
+        public static int nEnabledPixels = 0; // Number of enabled (lit) pixels
+        public static int Space = 0; // this is to emulate the infinite space around the image. 0 means space aroudn is filled by "."   1 means by "#"
         public int GetSize() =>  field.GetLength(0);
         public void Set(int x, int y, char value) => field[x + 1, y + 1] = value; // + 1  to keep the frame (1 pixel around the image) empty
         public char Get(int x, int y) => field[x, y];
-        public Field(int n) => field = new char[n,n];
+        public Field(int n) => field = new char[n + 2,n + 2];  // 2 for the frame of empty pixels around the main picture
+        public Field() => field = new char[GetSize() + 2, GetSize() + 2];  // 2 for the frame of empty pixels around the main picture
+        public int SpaceFlip() => Space = 1 - Space; // to switch the value from 0 to 1 and from 1 to 0  to emulate the space around is filled by 0 or 1
     }
     public class Program
     {
         // Answers for Data_t.txt   Part 1:   35     Part 2:  3351
         // Answers for Data_p.txt   Part 1: 5391     Part 2: 16383 
-        // Answers for Data_p0.txt  Part 1: 5682     Part 2: 17628 
-        static readonly string filePath = @".\..\..\..\Data_p.txt";
-        static string IEA;  //image enhancement algorithm
-
-        static Field FieldA;
-        static Field FieldB;
-        static int nEnabledPixels = 0;
-        static int Space = 0; // this is to emulate the infinite space around the image. 0 means "."   1 means "#"
+        // Answers for Data_p1.txt  Part 1: 5682     Part 2: 17628 
+        static readonly string filePath = @".\..\..\..\Data_t.txt";
+        static Field Field;
+        
 
         public static void Main(string[] args)
         {
             EnhanceImage(2);
-            Console.WriteLine("Part one: {0, 10:0}", nEnabledPixels);
+            Console.WriteLine("Part one: {0, 10:0}", Field.nEnabledPixels);
 
             EnhanceImage(50);
-            Console.WriteLine("Part one: {0, 10:0}", nEnabledPixels);
+            Console.WriteLine("Part one: {0, 10:0}", Field.nEnabledPixels);
         }
         public static void EnhanceImage(int nRepeats)
         {
             ParsingInputData();
             for (int i = 0; i < nRepeats; i++)
             {
-                nEnabledPixels = 0;
-                FieldB = new Field(FieldA.GetSize() + 2); // 2 for the frame of empty pixels around the main picture
+                Field.nEnabledPixels = 0;
+                Field FieldNew = new Field(Field.GetSize());
 
-                for (int x = 0; x < FieldA.GetSize(); x++)
-                    for (int y = 0; y < FieldA.GetSize(); y++)
-                        FieldB.Set(y, x, CalculateNewPixel(x, y)); 
+                for (int x = 0; x < Field.GetSize(); x++)
+                    for (int y = 0; y < Field.GetSize(); y++)
+                        FieldNew.Set(y, x, CalculateNewPixel(x, y)); 
 
-                FieldA = FieldB;
-                Space = 1 - Space; // to switch the value from 0 to 1 and from 1 to 0  to show the space around is filled by 0 or 1
+                Field = FieldNew;
+                Field.SpaceFlip(); 
             }
         }
         private static char CalculateNewPixel(int xCenter, int yCenter)
@@ -52,29 +53,28 @@
                 for (int x = xCenter - 1; x <= xCenter + 1; x++)
                 {
                     // if the x or y outside the image (in the space or in the frame)
-                    if (x < 1 || x >= FieldA.GetSize() - 1 || y < 1 || y >= FieldA.GetSize() - 1)
+                    if (x < 1 || x >= Field.GetSize() - 1 || y < 1 || y >= Field.GetSize() - 1)
                     {
-                        // IEA[0] is important; 9 empty pixel will generate "."  , 9 enabled pixels will generate "#"
-                        if(IEA[0] == '.' || Space == 0)
+                        // IEA[0] is important; if IEA[0] == '.' 9 empty pixel will generate "."  ,  if IEA[0] == '#' 9 empty pixels will generate "#"
+                        if (Field.IEA[0] == '.' || Field.Space == 0)
                             sRes += "0";
-
-                        if (IEA[0] == '#' && Space == 1)
+                        else
                             sRes += "1";
                     }
                     else
-                        sRes += (FieldA.Get(y, x) == '#') ? "1" : "0";
+                        sRes += (Field.Get(y, x) == '#') ? "1" : "0";
                 }
 
             int nIndex = Convert.ToInt32(sRes, 2);
-            if (IEA[nIndex] == '#')
-                nEnabledPixels++;
+            
+            if (Field.IEA[nIndex] == '#') Field.nEnabledPixels++;
 
-            return IEA[nIndex];
+            return Field.IEA[nIndex];
         }
         private static void ParsingInputData()
         {
             StreamReader file = new(filePath);
-            IEA = file.ReadLine();
+            string IEA = file.ReadLine();
             file.ReadLine();  // empty one - ignoring
 
             List<string> InputData = new List<string>();
@@ -82,11 +82,12 @@
                 InputData.Add(file.ReadLine());
 
             int nFieldSize = InputData.First().Length;
-             FieldA = new Field(nFieldSize + 2); // frame
+            Field = new Field(nFieldSize);
+            Field.IEA = IEA;
 
             for (int x = 0;x < nFieldSize;x++)
                 for(int y = 0;y < nFieldSize;y++)
-                    FieldA.Set(y, x, InputData[y][x]);
+                    Field.Set(y, x, InputData[y][x]);
         }
     }
 }
