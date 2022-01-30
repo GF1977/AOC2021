@@ -4,106 +4,77 @@ namespace MyApp
 {
     public struct Player
     {
-        public int Number = 0;
         public int Position = 0;
         public int Score = 0;
-        public Player(int n) { Number = n; }
-    }
-
+     }
     public class Program
     {
         // Answers for Data_p.txt  Part 1: 920580     Part 2: 647920021341197
-        static readonly string filePath = @".\..\..\..\Data_p.txt";
-
         static Dictionary<int, int> Probabilities = new Dictionary<int, int>() { { 3, 1 }, { 4, 3 }, { 5, 6 }, { 6, 7 }, { 7, 6 }, { 8, 3 }, { 9, 1 } };
-
+        static readonly string filePath = @".\..\..\..\Data_p.txt";
         static int nDiceRollsNumber = 0;
         public static void Main(string[] args)
         {
-            Player PlayerOne = new Player(0);
-            Player PlayerTwo = new Player(1);
-
             // Part One
+            Player PlayerOne = new Player();
+            Player PlayerTwo = new Player();
+
             ParsingInputData(out PlayerOne.Position, out PlayerTwo.Position);
-
-            while (true)
-            {
-                PlayerOne = PlayRound(PlayerOne);
-                if (PlayerOne.Score >= 1000)
-                    break;
-
-                PlayerTwo = PlayRound(PlayerTwo);
-                if (PlayerTwo.Score >= 1000)
-                    break;
-            }
-
-            Console.WriteLine("Part one:            {0, 20:0}", Math.Min(PlayerOne.Score, PlayerTwo.Score) * nDiceRollsNumber);
+            Console.WriteLine("Part one:            {0, 20:0}", PlayPartOne(PlayerOne, PlayerTwo) * nDiceRollsNumber);
 
             // Part Two;
+            PlayerOne = new Player();
+            PlayerTwo = new Player();
 
-            PlayerOne = new Player(0);
-            PlayerTwo = new Player(1);
             ParsingInputData(out PlayerOne.Position, out PlayerTwo.Position);
 
-            (long , long) wins = PlayPartTwo(0, PlayerOne.Position, 0, PlayerTwo.Position, 0);
-
-            Console.WriteLine("Part Two:            {0, 20:0}", Math.Max(wins.Item1, wins.Item2));
+            (long , long) Universes = PlayPartTwo(0, PlayerOne,PlayerTwo);
+            Console.WriteLine("Part Two:            {0, 20:0}", Math.Max(Universes.Item1, Universes.Item2));
         }
-
-        private static Player PlayRound(Player P)
+        private static Player MovePawn(Player P, int roll)
         {
-
-            nDiceRollsNumber += 3;
-            int RollDice = 3 * ((nDiceRollsNumber - 1) % 100);
-
-            P.Position = (P.Position - 1 + RollDice) % 10 + 1;
-            P.Score += P.Position;
-
+            P.Position = (P.Position - 1 + roll) % 10 + 1;
+            P.Score = P.Score + P.Position;
             return P;
         }
-
-        private static (int, int) PlayRoundPartTwo(int Position, int Score, int roll)
+        private static int PlayPartOne(Player P1, Player P2)
         {
-            Position = (Position - 1 + roll) % 10 + 1;
-            Score = Score + Position;
-            return (Position, Score);
+            while (true)
+            {
+                nDiceRollsNumber += 3;
+                P1 = MovePawn(P1, 3 * ((nDiceRollsNumber - 1) % 100));
+                if (P1.Score >= 1000) 
+                    return P2.Score;
+
+                nDiceRollsNumber += 3;
+                P2 = MovePawn(P2, 3 * ((nDiceRollsNumber - 1) % 100));
+                if (P2.Score >= 1000)
+                    return P1.Score;
+            }
         }
-
-        
-        private static (long, long) PlayPartTwo(int Player, int Position0,  int Score0, int Position1 , int Score1)
+        // Part Two is inspired by https://www.reddit.com/r/adventofcode/comments/rl6p8y/comment/hph4r3k
+        private static (long, long) PlayPartTwo(int Player, Player P1, Player P2)
         {
-            if (Score0 >= 21)
+            if (P1.Score >= 21)
                 return (1, 0);
-            else if (Score1 >= 21)
+
+            if (P2.Score >= 21)
                 return (0, 1);
 
-            (long win0, long win1) wins = (0, 0);
+            (long P1Universes, long P2Universes) Universes = (0, 0);
+            (long P1Universes, long P2Universes) UniversesTemp = (0, 0);
 
-            (long win0, long win1) winsTemp = (0, 0);
-
-            foreach(var P in Probabilities)
+            foreach (var Prob in Probabilities)
             {
-                    if (Player == 0)
-                    {
-                        (int new_pos, int new_score) A = PlayRoundPartTwo(Position0, Score0, P.Key);
-                        winsTemp = PlayPartTwo(1, A.new_pos, A.new_score, Position1, Score1);
-                    }
-                    else
-                    {
-                        (int new_pos, int new_score) B = PlayRoundPartTwo(Position1, Score1, P.Key);
-                        winsTemp = PlayPartTwo(0, Position0, Score0, B.new_pos, B.new_score) ;
-                    }
+                if (Player == 0)
+                    UniversesTemp = PlayPartTwo(1, MovePawn(P1, Prob.Key), P2);
+                else
+                    UniversesTemp = PlayPartTwo(0, P1, MovePawn(P2, Prob.Key));
 
-
-                wins.win0 += winsTemp.win0 * P.Value;
-                wins.win1 += winsTemp.win1 * P.Value;
+                Universes.P1Universes += UniversesTemp.P1Universes * Prob.Value;
+                Universes.P2Universes += UniversesTemp.P2Universes * Prob.Value;
             }
-
-
-
-
-
-            return wins;
+            return Universes;
         }
         private static void ParsingInputData(out int P1Position, out int P2Position)
         {
