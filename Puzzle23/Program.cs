@@ -109,12 +109,12 @@
         static readonly string filePath = @".\..\..\..\Data_t.txt";
         static List<int> InputData = new List<int>();
 
-        static List<string> MovingOption = new List<string>();
-        static List<string> MovingOptionBest = new List<string>();
+        //static List<string> MovingOption = new List<string>();
+        //static List<string> MovingOptionBest = new List<string>();
 
-        static int NNN = 0;
         static int nStepCountBest = int.MaxValue;
         static int nStepScoreBest =int.MaxValue;
+        static long NNN = 0;
 
         public static void Main(string[] args)
         {
@@ -142,8 +142,8 @@
 
             startMoving(Shrimps, Rooms, 0, 0 , out a, out b);
 
-            foreach (string S in MovingOptionBest)
-                Console.WriteLine(S);
+            //foreach (string S in MovingOptionBest)
+            //    Console.WriteLine(S);
 
             //int res = 0;
             //bool a = IsWay(Rooms[17], Rooms[9], out res, Rooms);
@@ -170,23 +170,28 @@
                 Shrimps.Add(S);
             }
 
-            //Shrimps[0].RoomId = 12;
-            //Shrimps[1].RoomId = 15;
-            //Shrimps[2].RoomId = 8;
-            //Shrimps[3].RoomId = 10;
-            //Shrimps[4].RoomId = 9;
-            //Shrimps[5].RoomId = 14;
-            //Shrimps[6].RoomId = 13;
-            //Shrimps[7].RoomId = 11;
 
-            Shrimps[0].RoomId = 9;
-            Shrimps[1].RoomId = 12;
+
+            Shrimps[0].RoomId = 12;
+            Shrimps[1].RoomId = 15;
             Shrimps[2].RoomId = 8;
-            Shrimps[3].RoomId = 13;
-            Shrimps[4].RoomId = 10;
+            Shrimps[3].RoomId = 10;
+            Shrimps[4].RoomId = 9;
             Shrimps[5].RoomId = 14;
-            Shrimps[6].RoomId = 11;
-            Shrimps[7].RoomId = 15;
+            Shrimps[6].RoomId = 13;
+            Shrimps[7].RoomId = 11;
+
+
+            // the set below is for testing A changed with B
+
+            //Shrimps[0].RoomId = 9;
+            //Shrimps[1].RoomId = 12;
+            //Shrimps[2].RoomId = 8;
+            //Shrimps[3].RoomId = 13;
+            //Shrimps[4].RoomId = 10;
+            //Shrimps[5].RoomId = 14;
+            //Shrimps[6].RoomId = 11;
+            //Shrimps[7].RoomId = 15;
 
 
             return Shrimps;
@@ -208,24 +213,25 @@
             Rooms[11].OpenFor = Rooms[15].OpenFor = "D";
 
 
-            //Rooms[12].isOccupied = "A";
-            //Rooms[15].isOccupied = "A";
-            //Rooms[8].isOccupied = "B";
-            //Rooms[10].isOccupied = "B";
-            //Rooms[9].isOccupied = "C";
-            //Rooms[14].isOccupied = "C";
-            //Rooms[13].isOccupied = "D";
-            //Rooms[11].isOccupied = "D";
-
-
-            Rooms[9].isOccupied = "A";
             Rooms[12].isOccupied = "A";
+            Rooms[15].isOccupied = "A";
             Rooms[8].isOccupied = "B";
-            Rooms[13].isOccupied = "B";
-            Rooms[10].isOccupied = "C";
+            Rooms[10].isOccupied = "B";
+            Rooms[9].isOccupied = "C";
             Rooms[14].isOccupied = "C";
+            Rooms[13].isOccupied = "D";
             Rooms[11].isOccupied = "D";
-            Rooms[15].isOccupied = "D";
+
+            // the set below is for testing A changed with B
+
+            //Rooms[9].isOccupied = "A";
+            //Rooms[12].isOccupied = "A";
+            //Rooms[8].isOccupied = "B";
+            //Rooms[13].isOccupied = "B";
+            //Rooms[10].isOccupied = "C";
+            //Rooms[14].isOccupied = "C";
+            //Rooms[11].isOccupied = "D";
+            //Rooms[15].isOccupied = "D";
 
 
             return Rooms;
@@ -324,9 +330,13 @@
 
         private static int startMoving(List<Shrimp> Shrimps, List<Room> Rooms, int recStepCount, int recScore, out int outStepCount, out int outScore)
         {
-
             outStepCount = 0;
             outScore = 0;
+
+            if (nStepScoreBest <= recScore)
+                return 1;
+
+            NNN++;
 
             //int rDestination;
             if (isCorrectOrder(Rooms))
@@ -360,7 +370,7 @@
                             foreach (Shrimp SS in Shrimps)
                                 ShrimpsTmp.Add((Shrimp)SS.Clone());
 
-                            ShrimpsTmp[S.Id].MoveCount = res;
+                            //ShrimpsTmp[S.Id].MoveCount = res;
                             //recStepCount += res;
                             //recScore += res * S.MoveCost;
 
@@ -368,13 +378,16 @@
 
                             string output = MoveTo(ShrimpsTmp[S.Id], REnd.Id, ShrimpsTmp, RoomsTmp);
 
-                            MovingOption.Add(output);
+                            //MovingOption.Add(output);
 
 
                             int recStepCountTMP = recStepCount + res;
                             int recScoreTMP = recScore + res * S.MoveCost;
 
-                            if (startMoving(ShrimpsTmp, RoomsTmp, recStepCountTMP, recScoreTMP,out recStepCountTMP, out recScoreTMP) == 0)
+                            if (nStepScoreBest < recScoreTMP)
+                                return 1;
+
+                            if (startMoving(ShrimpsTmp, RoomsTmp, recStepCountTMP, recScoreTMP, out recStepCountTMP, out recScoreTMP) == 0)
                             {
                                 //outStepCount = recStepCountTMP;
                                 //outScore = recScoreTMP;
@@ -384,17 +397,22 @@
                                 int nRes = 0;
 
 
-                                if (recScoreTMP < nStepScoreBest && MovingOption.Count > 0)
+                                if (recScoreTMP < nStepScoreBest && recScoreTMP > 0)
                                 {
                                     nStepCountBest = recStepCountTMP;
                                     nStepScoreBest = recScoreTMP;
-                                    MovingOptionBest.Clear();
-                                    MovingOptionBest.AddRange(MovingOption);
+                                    //MovingOptionBest.Clear();
+                                    //MovingOptionBest.AddRange(MovingOption);
                                 }
 
-                                MovingOption.Clear();
+
+                                //MovingOption.Clear();
                                 return 1;
                             }
+
+
+
+
 
                             //MoveTo(S, REnd.Id, Shrimps, Rooms);
 
