@@ -109,8 +109,8 @@
         static readonly string filePath = @".\..\..\..\Data_t.txt";
         static List<int> InputData = new List<int>();
 
-        static List<Shrimp> MovingOption = new List<Shrimp>();
-        static List<Shrimp> MovingOptionBest = new List<Shrimp>();
+        static List<string> MovingOption = new List<string>();
+        static List<string> MovingOptionBest = new List<string>();
 
         static int NNN = 0;
         static int nStepCountBest = int.MaxValue;
@@ -141,6 +141,9 @@
             int a, b;
 
             startMoving(Shrimps, Rooms, 0, 0 , out a, out b);
+
+            foreach (string S in MovingOptionBest)
+                Console.WriteLine(S);
 
             //int res = 0;
             //bool a = IsWay(Rooms[17], Rooms[9], out res, Rooms);
@@ -289,7 +292,7 @@
             return true;
         }
 
-        internal static void MoveTo(Shrimp S, int toRoom, List<Shrimp> Shrimps, List<Room> Rooms)
+        internal static string MoveTo(Shrimp S, int toRoom, List<Shrimp> Shrimps, List<Room> Rooms)
         {
             foreach(Shrimp SS in Shrimps)
                 SS.JustMoved = false;
@@ -298,8 +301,9 @@
             Room Rstart = Rooms.Find(r => r.Id == S.RoomId);
             Room Rend = Rooms.Find(r => r.Id == toRoom);
 
-
-            Console.WriteLine("{0}{1,2:0} moves from {2, 3:0} to {3, 3:0}", S.Type, S.Id, Rstart.Id, Rend.Id);
+            string Res = S.Type.ToString() + S.Id.ToString() + " moves from " + Rstart.Id + " to "  + Rend.Id;
+            //Console.WriteLine("{0}{1,2:0} moves from {2, 3:0} to {3, 3:0}", S.Type, S.Id, Rstart.Id, Rend.Id);
+           // Console.WriteLine(Res);
 
             Rstart.isOccupied = "";
             Rend.isOccupied = S.Type;
@@ -313,12 +317,14 @@
             S.LastRoomId = S.RoomId;
             S.RoomId = Rend.Id;
             //S.MoveCount += nMoves;
+
+            return Res;
         }
 
 
         private static int startMoving(List<Shrimp> Shrimps, List<Room> Rooms, int recStepCount, int recScore, out int outStepCount, out int outScore)
         {
-                        NNN++;
+
             outStepCount = 0;
             outScore = 0;
 
@@ -360,9 +366,9 @@
 
 
 
-                            MoveTo(ShrimpsTmp[S.Id], REnd.Id, ShrimpsTmp, RoomsTmp);
+                            string output = MoveTo(ShrimpsTmp[S.Id], REnd.Id, ShrimpsTmp, RoomsTmp);
 
-                            MovingOption.Add(S);
+                            MovingOption.Add(output);
 
 
                             int recStepCountTMP = recStepCount + res;
@@ -372,7 +378,7 @@
                             {
                                 //outStepCount = recStepCountTMP;
                                 //outScore = recScoreTMP;
-                                Console.WriteLine("--------- {0} - {1} ---------", recStepCountTMP, recScoreTMP);
+                                //Console.WriteLine("--------- {0} - {1} ---------", recStepCountTMP, recScoreTMP);
 
                                 int stepCount = 0;
                                 int nRes = 0;
@@ -425,8 +431,8 @@
             //Console.WriteLine("Count: {0}", stepCount);
             //Console.WriteLine("Cost:  {0}", nRes);
 
-            Console.WriteLine("======================");
-            NNN--;
+            //Console.WriteLine("======================");
+    
 
             outStepCount = 0;
             outScore = 0;
