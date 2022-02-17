@@ -11,6 +11,7 @@ namespace MyApp
         public List<int> Connections { get;  }
         public bool isVisited { get; set; }
 
+        public Dictionary<int, List<int>> Paths = new Dictionary<int, List<int>>();
         public Room()
         {
             this.Id = IDcounter++;
@@ -130,6 +131,19 @@ namespace MyApp
                 shrimp.CheckHome(Rooms);
 
             int a, b;
+            int res = 0;
+
+            //foreach (Room RStart in Rooms)
+            //    foreach (Room REnd in Rooms)
+            //    {
+            //        if (RStart.Id != REnd.Id)
+            //        {
+                        
+            //            bool aaa = IsWay(RStart, REnd, out res, Rooms);
+            //        }
+            //    }
+
+            //IsWay(Rooms[1], Rooms[12], out res, Rooms);
 
             stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -264,16 +278,18 @@ namespace MyApp
         }
         public static bool isMovable(Shrimp S, int toRoom, List<Room> Rooms)
         {
+            if (toRoom == 0) return false;
+            
             Room Rend = Rooms[toRoom];
 
             if(Rooms[S.RoomId].OpenFor == "ABCD")
                 if (!IsTherightDirection(S, Rend)) return false;
 
-            if(Rend.Id == 16 || Rend.Id == 17 || Rend.Id == 18 || Rend.Id == 19 ) return false;
+            //if(Rend.Id == 16 || Rend.Id == 17 || Rend.Id == 18 || Rend.Id == 19 ) return false;
+            if (Rend.Connections.Count == 3) return false;
 
             if (Rend.OpenFor.Contains(S.Type) == false) return false;
 
-            //Room R = Rooms.Find(r => r.Id == toRoom);
             if (Rend.Id == 8 && Rooms[12].isOccupied != "A") return false;
 
             if (Rend.Id == 9 && Rooms[13].isOccupied != "B") return false;
@@ -293,8 +309,9 @@ namespace MyApp
                 SS.JustMoved = false;
             
             S.JustMoved = true;
-            Room Rstart = Rooms.Find(r => r.Id == S.RoomId);
-            Room Rend = Rooms.Find(r => r.Id == toRoom);
+
+            Room Rstart = Rooms[S.RoomId];
+            Room Rend = Rooms[toRoom];
 
             string Res = S.Type.ToString() + S.Id.ToString() + " moves from " + Rstart.Id + " to "  + Rend.Id;
 
