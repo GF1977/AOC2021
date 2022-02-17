@@ -7,7 +7,7 @@ namespace MyApp
         private static int IDcounter = 0;
         public int Id { get;  }
         public string OpenFor { get; set; } // ABCD
-        public string isOccupied { get; set; }
+        public string isOccupiedBy { get; set; }
         public List<int> Connections { get;  }
         public bool isVisited { get; set; }
 
@@ -15,7 +15,7 @@ namespace MyApp
         public Room()
         {
             this.Id = IDcounter++;
-            this.isOccupied = "";
+            this.isOccupiedBy = "";
             this.OpenFor = "ABCD";
             this.isVisited = false;
 
@@ -41,7 +41,14 @@ namespace MyApp
 
         }
         public object Clone()
-        { return this.MemberwiseClone(); }
+        { 
+            return this.MemberwiseClone(); 
+        }
+
+        public int GetSteps(Room REnd)
+        {
+            return this.Paths[REnd.Id].Count();
+        }
 
     }
 
@@ -77,26 +84,26 @@ namespace MyApp
         {
             if (Type=="A")
             {
-                if((RoomId == 12) || (RoomId == 8 && Rooms[12].isOccupied == "A"))
+                if((RoomId == 12) || (RoomId == 8 && Rooms[12].isOccupiedBy == "A"))
                     ImHome = true;
 
             }
             if (Type == "B")
             {
-                if ((RoomId == 13) || (RoomId == 9 && Rooms[13].isOccupied == "B"))
+                if ((RoomId == 13) || (RoomId == 9 && Rooms[13].isOccupiedBy == "B"))
                     ImHome = true;
 
             }
 
             if (Type == "C")
             {
-                if ((RoomId == 14) || (RoomId == 10 && Rooms[14].isOccupied == "C"))
+                if ((RoomId == 14) || (RoomId == 10 && Rooms[14].isOccupiedBy == "C"))
                     ImHome = true;
 
             }
             if (Type == "D")
             {
-                if ((RoomId == 15) || (RoomId == 11 && Rooms[15].isOccupied == "D"))
+                if ((RoomId == 15) || (RoomId == 11 && Rooms[15].isOccupiedBy == "D"))
                     ImHome = true;
 
             }
@@ -133,19 +140,24 @@ namespace MyApp
             int a, b;
             int res = 0;
 
-            //foreach (Room RStart in Rooms)
-            //    foreach (Room REnd in Rooms)
-            //    {
-            //        if (RStart.Id != REnd.Id)
-            //        {
-                        
-            //            bool aaa = IsWay(RStart, REnd, out res, Rooms);
-            //        }
-            //    }
+            foreach (Room RStart in Rooms.Where(r => r.Id != 0))
+                foreach (Room REnd in Rooms.Where(r => r.Id != 0))
+                {
+                    if (RStart.Id != REnd.Id)
+                    {
+                        List<int> aaa = IsWay2(RStart, REnd, Rooms);
+                        aaa.Reverse();
+                        RStart.Paths.Add(REnd.Id, aaa);
 
-            //IsWay(Rooms[1], Rooms[12], out res, Rooms);
+                        foreach (Room R in Rooms) R.isVisited = false;
+                    }
+                }
 
-            stopwatch = new Stopwatch();
+            List<int> tmp = new List<int>();
+            List<int> x = IsWay2(Rooms[12], Rooms[13], Rooms);
+            Console.WriteLine("X = {0}", x);
+
+           stopwatch = new Stopwatch();
             stopwatch.Start();
             
 
@@ -221,51 +233,70 @@ namespace MyApp
             Rooms[11].OpenFor = Rooms[15].OpenFor = "D";
 
 
-            Rooms[12].isOccupied = "A";
-            Rooms[15].isOccupied = "A";
-            Rooms[8].isOccupied = "B";
-            Rooms[10].isOccupied = "B";
-            Rooms[9].isOccupied = "C";
-            Rooms[14].isOccupied = "C";
-            Rooms[13].isOccupied = "D";
-            Rooms[11].isOccupied = "D";
+            Rooms[12].isOccupiedBy = "A";
+            Rooms[15].isOccupiedBy = "A";
+            Rooms[8].isOccupiedBy = "B";
+            Rooms[10].isOccupiedBy = "B";
+            Rooms[9].isOccupiedBy = "C";
+            Rooms[14].isOccupiedBy = "C";
+            Rooms[13].isOccupiedBy = "D";
+            Rooms[11].isOccupiedBy = "D";
 
             // the set below is for testing A changed with B
 
-            //Rooms[9].isOccupied = "A";
-            //Rooms[12].isOccupied = "A";
-            //Rooms[8].isOccupied = "B";
-            //Rooms[13].isOccupied = "B";
-            //Rooms[10].isOccupied = "C";
-            //Rooms[14].isOccupied = "C";
-            //Rooms[11].isOccupied = "D";
-            //Rooms[15].isOccupied = "D";
+            //Rooms[9].isOccupiedBy = "A";
+            //Rooms[12].isOccupiedBy = "A";
+            //Rooms[8].isOccupiedBy = "B";
+            //Rooms[13].isOccupiedBy = "B";
+            //Rooms[10].isOccupiedBy = "C";
+            //Rooms[14].isOccupiedBy = "C";
+            //Rooms[11].isOccupiedBy = "D";
+            //Rooms[15].isOccupiedBy = "D";
 
 
             return Rooms;
         }
 
-        private static bool IsWay(Room rStart, Room rEnd, out int nStepsResult, List<Room> Rooms, int nSteps = 0)
+
+        private static List<int> IsWay2(Room rStart, Room Rend, List<Room> Rooms)
         {
-            nStepsResult = nSteps;
             rStart.isVisited = true;
-            if (rStart.Connections.Contains(rEnd.Id) && rEnd.isOccupied == "")
-            {
-                nStepsResult++;
-                return true;
-            }
+
+            if (rStart.Id == Rend.Id)
+                return new List<int>();
 
             foreach (int id in rStart.Connections)
-            {
-                Room R = Rooms.Find(r => r.Id == id);
-                if (R.isVisited == false && R.isOccupied == "" && IsWay(R, rEnd, out nStepsResult, Rooms, nStepsResult))
+                if (Rooms[id].isVisited == false)
                 {
-                    nStepsResult++;
-                    return true;
+                    List<int> Res = IsWay2(Rooms[id], Rend, Rooms);
+                    if (Res != null)
+                    {
+                        Res.Add(id);
+                        return Res;
+                    }
                 }
-            }
 
-            return false;
+            return null;
+        }
+
+
+        private static int IsWay(Room rStart, Room Rend, List<Room> Rooms)
+        {
+            rStart.isVisited = true;
+
+            if (rStart.Id == Rend.Id)
+                return 0;
+
+
+            foreach (int id in rStart.Connections)
+                if (Rooms[id].isVisited == false && Rooms[id].isOccupiedBy == "")
+                {
+                    int nStepsResult = IsWay(Rooms[id], Rend, Rooms);
+                    if (nStepsResult >= 0)
+                        return nStepsResult + 1;
+                }
+
+            return -1;
         }
         private static bool IsTherightDirection(Shrimp S, Room Rend)
         {
@@ -281,24 +312,26 @@ namespace MyApp
             if (toRoom == 0) return false;
             
             Room Rend = Rooms[toRoom];
+            if (Rend.isOccupiedBy != "") return false;
 
-            if(Rooms[S.RoomId].OpenFor == "ABCD")
-                if (!IsTherightDirection(S, Rend)) return false;
+            if (Rooms[S.RoomId].OpenFor == "ABCD" && !IsTherightDirection(S, Rend)) return false;
+            if (Rooms[S.RoomId].OpenFor == "ABCD" && Rend.OpenFor == "ABCD") return false;
 
-            //if(Rend.Id == 16 || Rend.Id == 17 || Rend.Id == 18 || Rend.Id == 19 ) return false;
             if (Rend.Connections.Count == 3) return false;
 
             if (Rend.OpenFor.Contains(S.Type) == false) return false;
 
-            if (Rend.Id == 8 && Rooms[12].isOccupied != "A") return false;
+            if (Rend.Id == 8 && Rooms[12].isOccupiedBy != "A") return false;
 
-            if (Rend.Id == 9 && Rooms[13].isOccupied != "B") return false;
+            if (Rend.Id == 9 && Rooms[13].isOccupiedBy != "B") return false;
 
-            if (Rend.Id == 10 && Rooms[14].isOccupied != "C") return false;
+            if (Rend.Id == 10 && Rooms[14].isOccupiedBy != "C") return false;
 
-            if (Rend.Id == 11 && Rooms[15].isOccupied != "D") return false;
+            if (Rend.Id == 11 && Rooms[15].isOccupiedBy != "D") return false;
 
-            if (Rooms.Find(r => r.Id == S.RoomId).OpenFor == "ABCD" && Rend.OpenFor == "ABCD") return false;
+
+            foreach (int id in Rooms[S.RoomId].Paths[toRoom])
+                if (Rooms[id].isOccupiedBy != "") return false;
 
             return true;
         }
@@ -315,8 +348,8 @@ namespace MyApp
 
             string Res = S.Type.ToString() + S.Id.ToString() + " moves from " + Rstart.Id + " to "  + Rend.Id;
 
-            Rstart.isOccupied = "";
-            Rend.isOccupied = S.Type;
+            Rstart.isOccupiedBy = "";
+            Rend.isOccupiedBy = S.Type;
 
             if (Rend.OpenFor != "ABCD") S.ImHome = true;
 
@@ -336,7 +369,7 @@ namespace MyApp
 
 
             //int rDestination;
-            if (isCorrectOrder(Rooms))
+            if (isCorrectOrder(Shrimps))
             {
                 outStepCount = recStepCount;
                 outScore = recScore;
@@ -352,13 +385,14 @@ namespace MyApp
 
                 foreach (Room REnd in Rooms)
                 {
-                    int res;
+                    //int res;
                     
 
                     if (isMovable(S, REnd.Id, Rooms))
                         {
-                        foreach (Room R in Rooms) R.isVisited = false;
-                        if (IsWay(RStart, REnd, out res, Rooms))
+
+                        int res = RStart.Paths[REnd.Id].Count();
+                        if (res > 0)
                         {
 
                             List<Room> RoomsTmp = new List<Room>();
@@ -404,16 +438,11 @@ namespace MyApp
             return 1;
         }
 
-        private static bool isCorrectOrder(List<Room> Rooms)
+        private static bool isCorrectOrder(List<Shrimp> Shrimps)
         {
-            if (Rooms[ 8].isOccupied != "A") return false;
-            if (Rooms[ 9].isOccupied != "B") return false;
-            if (Rooms[10].isOccupied != "C") return false;
-            if (Rooms[11].isOccupied != "D") return false;
-            if (Rooms[12].isOccupied != "A") return false;
-            if (Rooms[13].isOccupied != "B") return false;
-            if (Rooms[14].isOccupied != "C") return false;
-            if (Rooms[15].isOccupied != "D") return false;
+            foreach (Shrimp S in Shrimps)
+                if (S.ImHome == false)
+                    return false;
 
             return true;
         }
