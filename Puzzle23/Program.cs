@@ -60,14 +60,14 @@ namespace MyApp
         public int MoveCount { get; set; }
         public int MoveCost { get; set; } // 1 - 1000
         public int RoomId { get; set; }
-        public bool JustMoved { get; set; }
+       // public bool JustMoved { get; set; }
         public bool ImHome { get; set; }
 
         public Shrimp(string Type)
         {
             this.Id = IDcounter++;
             this.ImHome = false;
-            this.JustMoved = false;
+            //this.JustMoved = false;
             this.Type = Type;
             this.MoveCount = 0;
             this.RoomId = RoomId;
@@ -122,6 +122,7 @@ namespace MyApp
 
         static int nStepCountBest = int.MaxValue;
         static int nStepScoreBest =int.MaxValue;
+        static int LastMovedShrimp = 0;
         static Stopwatch stopwatch;
 
         static Dictionary<int, long> _memo = new() { { 0, 0 }, { 1, 1 } };
@@ -138,26 +139,20 @@ namespace MyApp
                 shrimp.CheckHome(Rooms);
 
             int a, b;
-            int res = 0;
 
             foreach (Room RStart in Rooms.Where(r => r.Id != 0))
                 foreach (Room REnd in Rooms.Where(r => r.Id != 0))
-                {
                     if (RStart.Id != REnd.Id)
                     {
-                        List<int> aaa = IsWay2(RStart, REnd, Rooms);
-                        aaa.Reverse();
-                        RStart.Paths.Add(REnd.Id, aaa);
+                        List<int> tmp = GetFullPath(RStart, REnd, Rooms);
+                        tmp.Reverse();
+                        RStart.Paths.Add(REnd.Id, tmp);
 
                         foreach (Room R in Rooms) R.isVisited = false;
                     }
-                }
+            
 
-            List<int> tmp = new List<int>();
-            List<int> x = IsWay2(Rooms[12], Rooms[13], Rooms);
-            Console.WriteLine("X = {0}", x);
-
-           stopwatch = new Stopwatch();
+            stopwatch = new Stopwatch();
             stopwatch.Start();
             
 
@@ -258,7 +253,7 @@ namespace MyApp
         }
 
 
-        private static List<int> IsWay2(Room rStart, Room Rend, List<Room> Rooms)
+        private static List<int> GetFullPath(Room rStart, Room Rend, List<Room> Rooms)
         {
             rStart.isVisited = true;
 
@@ -266,9 +261,9 @@ namespace MyApp
                 return new List<int>();
 
             foreach (int id in rStart.Connections)
-                if (Rooms[id].isVisited == false)
+                if (!Rooms[id].isVisited)
                 {
-                    List<int> Res = IsWay2(Rooms[id], Rend, Rooms);
+                    List<int> Res = GetFullPath(Rooms[id], Rend, Rooms);
                     if (Res != null)
                     {
                         Res.Add(id);
@@ -279,56 +274,28 @@ namespace MyApp
             return null;
         }
 
-
-        private static int IsWay(Room rStart, Room Rend, List<Room> Rooms)
+        private static bool IsRightDistination(Shrimp S, Room Rend, List<Room> Rooms)
         {
-            rStart.isVisited = true;
-
-            if (rStart.Id == Rend.Id)
-                return 0;
-
-
-            foreach (int id in rStart.Connections)
-                if (Rooms[id].isVisited == false && Rooms[id].isOccupiedBy == "")
-                {
-                    int nStepsResult = IsWay(Rooms[id], Rend, Rooms);
-                    if (nStepsResult >= 0)
-                        return nStepsResult + 1;
-                }
-
-            return -1;
-        }
-        private static bool IsTherightDirection(Shrimp S, Room Rend)
-        {
-            if (S.Type == "A" && (Rend.Id ==  8 || Rend.Id == 12)) return true;
-            if (S.Type == "B" && (Rend.Id ==  9 || Rend.Id == 13)) return true;
-            if (S.Type == "C" && (Rend.Id == 10 || Rend.Id == 14)) return true;
-            if (S.Type == "D" && (Rend.Id == 11 || Rend.Id == 15)) return true;
+            if (S.Type == "A" && (Rend.Id ==  8 && Rooms[12].isOccupiedBy == "A") || Rend.Id == 12) return true;
+            if (S.Type == "B" && (Rend.Id ==  9 && Rooms[13].isOccupiedBy == "B") || Rend.Id == 13) return true;
+            if (S.Type == "C" && (Rend.Id == 10 && Rooms[14].isOccupiedBy == "C") || Rend.Id == 14) return true;
+            if (S.Type == "D" && (Rend.Id == 11 && Rooms[15].isOccupiedBy == "D") || Rend.Id == 15) return true;
 
             return false;
         }
         public static bool isMovable(Shrimp S, int toRoom, List<Room> Rooms)
         {
-            if (toRoom == 0) return false;
-            
-            Room Rend = Rooms[toRoom];
-            if (Rend.isOccupiedBy != "") return false;
+            if (toRoom == 0 || S.RoomId == toRoom || Rooms[toRoom].isOccupiedBy != "") 
+                return false;
 
-            if (Rooms[S.RoomId].OpenFor == "ABCD" && !IsTherightDirection(S, Rend)) return false;
-            if (Rooms[S.RoomId].OpenFor == "ABCD" && Rend.OpenFor == "ABCD") return false;
+            if (Rooms[S.RoomId].OpenFor == "ABCD" && !IsRightDistination(S, Rooms[toRoom], Rooms)) 
+                return false;
 
-            if (Rend.Connections.Count == 3) return false;
+            if (Rooms[toRoom].Connections.Count == 3) 
+                return false;
 
-            if (Rend.OpenFor.Contains(S.Type) == false) return false;
-
-            if (Rend.Id == 8 && Rooms[12].isOccupiedBy != "A") return false;
-
-            if (Rend.Id == 9 && Rooms[13].isOccupiedBy != "B") return false;
-
-            if (Rend.Id == 10 && Rooms[14].isOccupiedBy != "C") return false;
-
-            if (Rend.Id == 11 && Rooms[15].isOccupiedBy != "D") return false;
-
+            if (Rooms[toRoom].OpenFor.Contains(S.Type) == false) 
+                return false;
 
             foreach (int id in Rooms[S.RoomId].Paths[toRoom])
                 if (Rooms[id].isOccupiedBy != "") return false;
@@ -338,10 +305,11 @@ namespace MyApp
 
         internal static string MoveTo(Shrimp S, int toRoom, List<Shrimp> Shrimps, List<Room> Rooms)
         {
-            foreach(Shrimp SS in Shrimps)
-                SS.JustMoved = false;
-            
-            S.JustMoved = true;
+            //foreach(Shrimp SS in Shrimps)
+            //SS.JustMoved = false;
+
+            //S.JustMoved = true;
+            LastMovedShrimp = S.Id;
 
             Room Rstart = Rooms[S.RoomId];
             Room Rend = Rooms[toRoom];
@@ -379,7 +347,7 @@ namespace MyApp
             }
 
             
-            foreach(Shrimp S in Shrimps.Where(s=>s.ImHome == false && s.JustMoved == false))
+            foreach(Shrimp S in Shrimps.Where(s=>s.ImHome == false && s.Id != LastMovedShrimp))
             {
                 Room RStart = Rooms[S.RoomId];
 
