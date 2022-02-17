@@ -60,19 +60,16 @@ namespace MyApp
         public int MoveCount { get; set; }
         public int MoveCost { get; set; } // 1 - 1000
         public int RoomId { get; set; }
-       // public bool JustMoved { get; set; }
         public bool ImHome { get; set; }
 
         public Shrimp(string Type)
         {
             this.Id = IDcounter++;
             this.ImHome = false;
-            //this.JustMoved = false;
             this.Type = Type;
             this.MoveCount = 0;
             this.RoomId = RoomId;
-           
-           
+         
             this.MoveCost = (Type == "A") ? 1 : (Type == "B") ? 10 : (Type == "C") ? 100 : (Type == "D") ? 1000 : -1;
         }
         public object Clone()
@@ -117,8 +114,8 @@ namespace MyApp
         static readonly string filePath = @".\..\..\..\Data_t.txt";
         static List<int> InputData = new List<int>();
 
-        //static List<string> MovingOption = new List<string>();
-        //static List<string> MovingOptionBest = new List<string>();
+        static List<string> MovingOption = new List<string>();
+        static List<string> MovingOptionBest = new List<string>();
 
         static int nStepCountBest = int.MaxValue;
         static int nStepScoreBest =int.MaxValue;
@@ -158,8 +155,8 @@ namespace MyApp
 
             startMoving(Shrimps, Rooms, 0, 0 , out a, out b);
 
-            //foreach (string S in MovingOptionBest)
-            //    Console.WriteLine(S);
+            foreach (string S in MovingOptionBest)
+                Console.WriteLine(S);
 
             Console.WriteLine("Total time {0,8:0.000} Seconds", stopwatch.ElapsedMilliseconds / 1000.0);
 
@@ -186,15 +183,25 @@ namespace MyApp
             }
 
 
-
-            Shrimps[0].RoomId = 12;
-            Shrimps[1].RoomId = 15;
-            Shrimps[2].RoomId = 8;
+            Shrimps[0].RoomId =  9;  
+            Shrimps[1].RoomId = 13;
+            Shrimps[2].RoomId = 12;
             Shrimps[3].RoomId = 10;
-            Shrimps[4].RoomId = 9;
-            Shrimps[5].RoomId = 14;
-            Shrimps[6].RoomId = 13;
+            Shrimps[4].RoomId = 8;
+            Shrimps[5].RoomId = 15;
+            Shrimps[6].RoomId = 14;
             Shrimps[7].RoomId = 11;
+
+
+            // TEST case from AOC
+            //Shrimps[0].RoomId = 12;
+            //Shrimps[1].RoomId = 15;
+            //Shrimps[2].RoomId = 8;
+            //Shrimps[3].RoomId = 10;
+            //Shrimps[4].RoomId = 9;
+            //Shrimps[5].RoomId = 14;
+            //Shrimps[6].RoomId = 13;
+            //Shrimps[7].RoomId = 11;
 
 
             // the set below is for testing A changed with B
@@ -228,14 +235,35 @@ namespace MyApp
             Rooms[11].OpenFor = Rooms[15].OpenFor = "D";
 
 
-            Rooms[12].isOccupiedBy = "A";
-            Rooms[15].isOccupiedBy = "A";
-            Rooms[8].isOccupiedBy = "B";
+
+
+            Rooms[8].isOccupiedBy = "C";
+            Rooms[12].isOccupiedBy = "B";
+
+            Rooms[9].isOccupiedBy = "A";
+            Rooms[13].isOccupiedBy = "A";
+
             Rooms[10].isOccupiedBy = "B";
-            Rooms[9].isOccupiedBy = "C";
-            Rooms[14].isOccupiedBy = "C";
-            Rooms[13].isOccupiedBy = "D";
+            Rooms[14].isOccupiedBy = "D";
+
             Rooms[11].isOccupiedBy = "D";
+            Rooms[15].isOccupiedBy = "C";
+
+
+            // test case from AOC
+            //Rooms[8].isOccupiedBy = "B";
+            //Rooms[12].isOccupiedBy = "A";
+
+            //Rooms[9].isOccupiedBy = "C";
+            //Rooms[13].isOccupiedBy = "D";
+
+            //Rooms[10].isOccupiedBy = "B";
+            //Rooms[14].isOccupiedBy = "C";
+
+            //Rooms[11].isOccupiedBy = "D";
+            //Rooms[15].isOccupiedBy = "A";
+
+
 
             // the set below is for testing A changed with B
 
@@ -373,7 +401,7 @@ namespace MyApp
 
                             string output = MoveTo(ShrimpsTmp[S.Id], REnd.Id, ShrimpsTmp, RoomsTmp);
 
-                            //MovingOption.Add(output);
+                            MovingOption.Add(output);
 
 
                             int recStepCountTMP = recStepCount + res;
@@ -389,12 +417,12 @@ namespace MyApp
                                 {
                                     nStepCountBest = recStepCountTMP;
                                     nStepScoreBest = recScoreTMP;
-                                    //MovingOptionBest.Clear();
-                                    //MovingOptionBest.AddRange(MovingOption);
+                                    MovingOptionBest.Clear();
+                                    MovingOptionBest.AddRange(MovingOption);
                                 }
 
 
-                                //MovingOption.Clear();
+                                MovingOption.Clear();
                                 return 1;
                             }
                         }
