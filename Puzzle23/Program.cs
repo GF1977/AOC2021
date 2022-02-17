@@ -1,4 +1,6 @@
-﻿namespace MyApp
+﻿using System.Diagnostics;
+
+namespace MyApp
 {
     public class Room
     {
@@ -48,10 +50,8 @@
         public string Type { get; set; } // ABCD
         public int Id { get; set; }
         public int MoveCount { get; set; }
-        public int LastMoveCount { get; set; }
         public int MoveCost { get; set; } // 1 - 1000
         public int RoomId { get; set; }
-        public int LastRoomId { get; set; }
         public bool JustMoved { get; set; }
         public bool ImHome { get; set; }
 
@@ -63,8 +63,8 @@
             this.Type = Type;
             this.MoveCount = 0;
             this.RoomId = RoomId;
-            this.LastRoomId = -1;
-            this.LastMoveCount = int.MaxValue;
+           
+           
             this.MoveCost = (Type == "A") ? 1 : (Type == "B") ? 10 : (Type == "C") ? 100 : (Type == "D") ? 1000 : -1;
         }
         public object Clone()
@@ -114,7 +114,10 @@
 
         static int nStepCountBest = int.MaxValue;
         static int nStepScoreBest =int.MaxValue;
-        static long NNN = 0;
+        static Stopwatch stopwatch;
+
+        static Dictionary<int, long> _memo = new() { { 0, 0 }, { 1, 1 } };
+
 
         public static void Main(string[] args)
         {
@@ -125,28 +128,19 @@
 
             foreach (Shrimp shrimp in Shrimps)
                 shrimp.CheckHome(Rooms);
-            //Shrimp S = Shrimps[2];
-            //bool a = isMovable(S, 16);
-            //Console.WriteLine(a);
 
-            //if (startMoving(Shrimps,Rooms) == 1)                Console.WriteLine("No solution");
-
-            //while (true)
-            //int x = 1;
-            //while(x > 0)
-            //{
-            //    foreach (Shrimp S in Shrimps.Where(s => s.ImHome == false))
-            //        x = startMoving(S, Shrimps, Rooms);
-            //}
             int a, b;
+
+            stopwatch = new Stopwatch();
+            stopwatch.Start();
+            
 
             startMoving(Shrimps, Rooms, 0, 0 , out a, out b);
 
             //foreach (string S in MovingOptionBest)
             //    Console.WriteLine(S);
 
-            //int res = 0;
-            //bool a = IsWay(Rooms[17], Rooms[9], out res, Rooms);
+            Console.WriteLine("Total time {0,8:0.000} Seconds", stopwatch.ElapsedMilliseconds / 1000.0);
 
             Console.WriteLine("Part one: {0, 10:0}", nStepCountBest);
             Console.WriteLine("Part two: {0, 10:0}", nStepScoreBest);
@@ -259,32 +253,27 @@
 
             return false;
         }
+        private static bool IsTherightDirection(Shrimp S, Room Rend)
+        {
+            if (S.Type == "A" && (Rend.Id ==  8 || Rend.Id == 12)) return true;
+            if (S.Type == "B" && (Rend.Id ==  9 || Rend.Id == 13)) return true;
+            if (S.Type == "C" && (Rend.Id == 10 || Rend.Id == 14)) return true;
+            if (S.Type == "D" && (Rend.Id == 11 || Rend.Id == 15)) return true;
+
+            return false;
+        }
         public static bool isMovable(Shrimp S, int toRoom, List<Room> Rooms)
         {
-            //if (S.JustMoved || S.ImHome) return false;
-            if (S.ImHome) return false;
+            Room Rend = Rooms[toRoom];
 
-           // Room Rstart = Rooms.Find(r => r.Id == S.RoomId);
-            Room Rend = Rooms.Find(r => r.Id == toRoom);
+            if(Rooms[S.RoomId].OpenFor == "ABCD")
+                if (!IsTherightDirection(S, Rend)) return false;
 
             if(Rend.Id == 16 || Rend.Id == 17 || Rend.Id == 18 || Rend.Id == 19 ) return false;
 
-            if(Rend.Id == S.LastRoomId) return false;
-
-            //if (Rend.Connections.Find(n => n == Rstart.Id) == 0)
-            //    return false;
-
-            //int x = Rend.Connections.Find(n => n == Rstart.Id);
-
-
-            //if (Rend.isOccupied != "") return false;
-            //if (Rstart.OpenFor == "ABCD" && Rend.OpenFor == "ABCD")
-            //    if(Rstart.Id != 16 && Rstart.Id != 17 && Rstart.Id != 18 && Rstart.Id != 19)
-            //        return false;
-            
             if (Rend.OpenFor.Contains(S.Type) == false) return false;
 
-            Room R = Rooms.Find(r => r.Id == toRoom);
+            //Room R = Rooms.Find(r => r.Id == toRoom);
             if (Rend.Id == 8 && Rooms[12].isOccupied != "A") return false;
 
             if (Rend.Id == 9 && Rooms[13].isOccupied != "B") return false;
@@ -308,21 +297,13 @@
             Room Rend = Rooms.Find(r => r.Id == toRoom);
 
             string Res = S.Type.ToString() + S.Id.ToString() + " moves from " + Rstart.Id + " to "  + Rend.Id;
-            //Console.WriteLine("{0}{1,2:0} moves from {2, 3:0} to {3, 3:0}", S.Type, S.Id, Rstart.Id, Rend.Id);
-           // Console.WriteLine(Res);
 
             Rstart.isOccupied = "";
             Rend.isOccupied = S.Type;
 
             if (Rend.OpenFor != "ABCD") S.ImHome = true;
-            int nMoves = 1;
 
-
-            //LastMovedShrimp = S.Id;
-
-            S.LastRoomId = S.RoomId;
             S.RoomId = Rend.Id;
-            //S.MoveCount += nMoves;
 
             return Res;
         }
@@ -336,31 +317,32 @@
             if (nStepScoreBest <= recScore)
                 return 1;
 
-            NNN++;
 
             //int rDestination;
             if (isCorrectOrder(Rooms))
             {
                 outStepCount = recStepCount;
                 outScore = recScore;
+
+                Console.WriteLine("Best score: {0}   - time {1,8:0.000} Seconds", recScore, stopwatch.ElapsedMilliseconds / 1000.0);
                 return 0;
             }
 
             
-            foreach(Shrimp S in Shrimps)
+            foreach(Shrimp S in Shrimps.Where(s=>s.ImHome == false && s.JustMoved == false))
             {
                 Room RStart = Rooms[S.RoomId];
 
                 foreach (Room REnd in Rooms)
                 {
                     int res;
-                    foreach (Room R in Rooms) R.isVisited = false;
+                    
 
-                    if(IsWay(RStart, REnd, out res, Rooms))
                     if (isMovable(S, REnd.Id, Rooms))
-                    {
-
-                            //S.MoveCount = res;
+                        {
+                        foreach (Room R in Rooms) R.isVisited = false;
+                        if (IsWay(RStart, REnd, out res, Rooms))
+                        {
 
                             List<Room> RoomsTmp = new List<Room>();
                             foreach (Room RR in Rooms)
@@ -369,12 +351,6 @@
                             List<Shrimp> ShrimpsTmp = new List<Shrimp>();
                             foreach (Shrimp SS in Shrimps)
                                 ShrimpsTmp.Add((Shrimp)SS.Clone());
-
-                            //ShrimpsTmp[S.Id].MoveCount = res;
-                            //recStepCount += res;
-                            //recScore += res * S.MoveCost;
-
-
 
                             string output = MoveTo(ShrimpsTmp[S.Id], REnd.Id, ShrimpsTmp, RoomsTmp);
 
@@ -389,13 +365,6 @@
 
                             if (startMoving(ShrimpsTmp, RoomsTmp, recStepCountTMP, recScoreTMP, out recStepCountTMP, out recScoreTMP) == 0)
                             {
-                                //outStepCount = recStepCountTMP;
-                                //outScore = recScoreTMP;
-                                //Console.WriteLine("--------- {0} - {1} ---------", recStepCountTMP, recScoreTMP);
-
-                                int stepCount = 0;
-                                int nRes = 0;
-
 
                                 if (recScoreTMP < nStepScoreBest && recScoreTMP > 0)
                                 {
@@ -409,51 +378,11 @@
                                 //MovingOption.Clear();
                                 return 1;
                             }
-
-
-
-
-
-                            //MoveTo(S, REnd.Id, Shrimps, Rooms);
-
-                            //if (startMoving(Shrimps, Rooms) == 0)
-                            //    return 1;
-
-
+                        }
                         }
                 }
-
-                        
+                      
             }
-
-            //int stepCount = 0;
-            //int nRes = 0;
-
-            //foreach (Shrimp Ss in MovingOption)
-            //{
-            //    stepCount += Ss.MoveCount;
-            //    nRes += Ss.MoveCount * Ss.MoveCost;
-            //}
-
-            //if(nRes < nStepScoreBest && MovingOption.Count > 0)
-            //{
-            //    nStepCountBest = stepCount;
-            //    nStepScoreBest = nRes;
-            //    MovingOptionBest.Clear();
-            //    MovingOptionBest.AddRange(MovingOption);
-            //}
-
-            //MovingOption.Clear();
-
-            //Console.WriteLine("");
-            //Console.WriteLine("Count: {0}", stepCount);
-            //Console.WriteLine("Cost:  {0}", nRes);
-
-            //Console.WriteLine("======================");
-    
-
-            outStepCount = 0;
-            outScore = 0;
 
             return 1;
         }
