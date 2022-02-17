@@ -114,8 +114,8 @@ namespace MyApp
         static readonly string filePath = @".\..\..\..\Data_t.txt";
         static List<int> InputData = new List<int>();
 
-        static List<string> MovingOption = new List<string>();
-        static List<string> MovingOptionBest = new List<string>();
+        //static List<string> MovingOption = new List<string>();
+        //static List<string> MovingOptionBest = new List<string>();
 
         static int nStepCountBest = int.MaxValue;
         static int nStepScoreBest =int.MaxValue;
@@ -155,8 +155,8 @@ namespace MyApp
 
             startMoving(Shrimps, Rooms, 0, 0 , out a, out b);
 
-            foreach (string S in MovingOptionBest)
-                Console.WriteLine(S);
+            //foreach (string S in MovingOptionBest)
+            //    Console.WriteLine(S);
 
             Console.WriteLine("Total time {0,8:0.000} Seconds", stopwatch.ElapsedMilliseconds / 1000.0);
 
@@ -313,6 +313,9 @@ namespace MyApp
         }
         public static bool isMovable(Shrimp S, int toRoom, List<Room> Rooms)
         {
+            if (S.ImHome) return false;
+            if (S.Id == LastMovedShrimp) return false;
+
             if (toRoom == 0 || S.RoomId == toRoom || Rooms[toRoom].isOccupiedBy != "") 
                 return false;
 
@@ -375,7 +378,7 @@ namespace MyApp
             }
 
             
-            foreach(Shrimp S in Shrimps.Where(s=>s.ImHome == false && s.Id != LastMovedShrimp))
+            foreach(Shrimp S in Shrimps)
             {
                 Room RStart = Rooms[S.RoomId];
 
@@ -401,7 +404,7 @@ namespace MyApp
 
                             string output = MoveTo(ShrimpsTmp[S.Id], REnd.Id, ShrimpsTmp, RoomsTmp);
 
-                            MovingOption.Add(output);
+                           // MovingOption.Add(output);
 
 
                             int recStepCountTMP = recStepCount + res;
@@ -417,12 +420,12 @@ namespace MyApp
                                 {
                                     nStepCountBest = recStepCountTMP;
                                     nStepScoreBest = recScoreTMP;
-                                    MovingOptionBest.Clear();
-                                    MovingOptionBest.AddRange(MovingOption);
+                                    //MovingOptionBest.Clear();
+                                    //MovingOptionBest.AddRange(MovingOption);
                                 }
 
 
-                                MovingOption.Clear();
+                                //MovingOption.Clear();
                                 return 1;
                             }
                         }
