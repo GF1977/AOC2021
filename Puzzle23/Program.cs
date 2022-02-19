@@ -69,8 +69,34 @@ namespace MyApp
 
         public bool IsItHome(List<Room> Rooms, Room Rend)
         {
-            Room RMax = Rooms.Find(r => r.Id == Rend.Connections.Max());
-            return (Type == Rend.OpenFor && (Rend.Connections.Count == 1 || RMax.isOccupiedBy == Type));
+            //if (Rend.OpenFor != Type)
+            //    return false;
+
+            //Room RMax = Rooms.Find(r => r.Id == Rend.Connections.Max());
+
+            //if (Type == Rend.OpenFor && (Rend.Connections.Count == 1 || RMax.isOccupiedBy == Type))
+            //    return true;
+
+            //return false;
+
+
+            //if (Rend.isOccupiedBy != "" || Rend.Id < 11 || Rend.OpenFor != Type)
+            //    return false;
+            if (Rend.OpenFor != Type)
+                return false;
+
+
+            int i = Rend.Id + 4;
+            while (i < Rooms.Count)
+            {
+                if (Rooms[i].isOccupiedBy != Type)
+                    return false;
+
+                i += 4;
+            }
+
+
+            return true;
         }
     }
 
@@ -81,6 +107,7 @@ namespace MyApp
 
         static int nStepScoreBest = int.MaxValue;
         static int LastMovedShrimp = 0;
+        static long Iterations = 0;
         static Stopwatch stopwatch;
 
         static List<Room> GlobalMap = new List<Room>();
@@ -114,7 +141,7 @@ namespace MyApp
                     }
 
 
-
+            int a = GetRestMinScore(Shrimps, Rooms);
 
 
             stopwatch = new Stopwatch();
@@ -126,7 +153,7 @@ namespace MyApp
 
             Console.WriteLine("Total time {0,8:0.000} Seconds", stopwatch.ElapsedMilliseconds / 1000.0);
 
-            Console.WriteLine("Part one: {0, 10:0}", 0);
+            Console.WriteLine("Part one: {0, 10:0}", Iterations);
             Console.WriteLine("Part two: {0, 10:0}", nStepScoreBest);
         }
 
@@ -174,31 +201,53 @@ namespace MyApp
             return true;
         }
 
-        internal static string MoveTo(Shrimp S, int toRoom, List<Shrimp> Shrimps, List<Room> Rooms)
+        internal static void MoveTo(Shrimp S, int toRoom, List<Shrimp> Shrimps, List<Room> Rooms)
         {
             LastMovedShrimp = S.Id;
 
             Room Rstart = Rooms[S.RoomId];
             Room Rend = Rooms[toRoom];
 
-            string Res = S.Type.ToString() + S.Id.ToString() + " moves from " + Rstart.Id + " to " + Rend.Id;
+            //string Res = S.Type.ToString() + S.Id.ToString() + " moves from " + Rstart.Id + " to " + Rend.Id;
 
             Rstart.isOccupiedBy = "";
             Rend.isOccupiedBy = S.Type;
 
-            if (Rend.OpenFor != "ABCD")
+            if (Rend.OpenFor == S.Type)
                 S.ImHome = true;
 
             S.RoomId = Rend.Id;
 
-            return Res;
+            //return Res;
         }
 
 
+        private static int GetRestMinScore(List<Shrimp> Shrimps, List<Room> Rooms)
+        {
+            List<int> OccupiedRoom = new List<int>();
+            int Res = 0;
+            foreach(Shrimp S in Shrimps)
+            {
+                if(!S.ImHome)
+                {
+                    foreach (Room R in Rooms.Where(r=>r.Id!=S.RoomId && r.Id >= 11))
+                        if (R.OpenFor == S.Type && !OccupiedRoom.Contains(R.Id))
+                        {
+                            Res += S.MoveCost * R.Paths[S.RoomId].Count();
+                            OccupiedRoom.Add(R.Id);
+                            break;
+                        }
+
+                }
+            }
+
+            return Res;
+        }
+
         private static int startMoving(List<Shrimp> Shrimps, List<Room> Rooms, int recScore)
         {
-
-            if (nStepScoreBest <= recScore)
+            Iterations++;
+            if (nStepScoreBest <= recScore + GetRestMinScore(Shrimps, Rooms))
                 return 1;
 
             if (isCorrectOrder(Shrimps))
@@ -229,7 +278,7 @@ namespace MyApp
 
                         int recScoreTMP = recScore + RStart.Paths[REnd.Id].Count() * S.MoveCost;
 
-                        if (nStepScoreBest < recScoreTMP)
+                        if (nStepScoreBest < recScoreTMP + GetRestMinScore(ShrimpsTmp, RoomsTmp))
                             return 1;
 
                         if (startMoving(ShrimpsTmp, RoomsTmp, recScoreTMP) == 0)
@@ -261,7 +310,7 @@ namespace MyApp
 
             List<Shrimp> TempList = new List<Shrimp>();
 
-            int[,] map = new int[13, 5];
+            int[,] map = new int[13, 7];
             int X = 0, Y = 0;
             using (StreamReader file = new(filePath))
                 while (!file.EndOfStream)
@@ -292,7 +341,7 @@ namespace MyApp
 
 
             for (int x = 0; x < 13; x++)
-                for (int y = 0; y < 5; y++)
+                for (int y = 0; y < 7; y++)
                 {
                     if (map[x, y] >= 1000)
                     {
@@ -313,7 +362,7 @@ namespace MyApp
 
             GlobalShrimps = TempList;
 
-            //GlobalShrimps = TempList.OrderBy(s=>s.Type).ToList();
+            //GlobalShrimps = TempList.OrderBy(s=>s.RoomId).ToList();
             //GlobalShrimps.Reverse();
         }
     
