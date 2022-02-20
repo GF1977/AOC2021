@@ -103,10 +103,10 @@ namespace MyApp
     public class Program
     {
         // Answers for Data_p.txt  Part 1:  11516    Part 2: 
-        static readonly string filePath = @".\..\..\..\Data_pIO.txt";
+        static readonly string filePath = @".\..\..\..\Data_t.txt";
 
         static int nStepScoreBest = int.MaxValue;
-        static int LastMovedShrimp = 0;
+        static int LastMovedShrimp = -1;
         static long Iterations = 0;
         static Stopwatch stopwatch;
 
