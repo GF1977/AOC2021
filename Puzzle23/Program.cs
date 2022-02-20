@@ -103,7 +103,7 @@ namespace MyApp
     public class Program
     {
         // Answers for Data_p.txt  Part 1:  11516    Part 2: 
-        static readonly string filePath = @".\..\..\..\Data_t.txt";
+        static readonly string filePath = @".\..\..\..\Data_pIO.txt";
 
         static int nStepScoreBest = int.MaxValue;
         static int LastMovedShrimp = -1;
@@ -192,7 +192,7 @@ namespace MyApp
             if (Rooms[toRoom].Connections.Count == 3)
                 return false;
 
-            if (Rooms[toRoom].OpenFor.Contains(S.Type) == false)
+            if (Rooms[toRoom].Id >= 11 && Rooms[toRoom].OpenFor != S.Type)
                 return false;
 
             foreach (int id in Rooms[S.RoomId].Paths[toRoom])
@@ -292,7 +292,7 @@ namespace MyApp
                 }
 
             }
-
+            LastMovedShrimp = -1;
             return 1;
         }
 
