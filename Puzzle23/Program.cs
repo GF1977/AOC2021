@@ -103,7 +103,7 @@ namespace MyApp
     public class Program
     {
         // Answers for Data_p.txt  Part 1:  11516    Part 2: 
-        static readonly string filePath = @".\..\..\..\Data_pIO.txt";
+        static readonly string filePath = @".\..\..\..\Data_s.txt";
 
         static int nStepScoreBest = int.MaxValue;
         static int LastMovedShrimp = -1;
@@ -246,13 +246,14 @@ namespace MyApp
 
         private static int startMoving(List<Shrimp> Shrimps, List<Room> Rooms, int recScore)
         {
+            LastMovedShrimp = -1;
             Iterations++;
             if (nStepScoreBest <= recScore + GetRestMinScore(Shrimps, Rooms))
                 return 1;
 
             if (isCorrectOrder(Shrimps))
             {
-                //LastMovedShrimp = -1;
+                
                 Console.WriteLine("Best score: {0}   - time {1,8:0.000} Seconds", recScore, stopwatch.ElapsedMilliseconds / 1000.0);
                 return 0;
             }
@@ -281,11 +282,12 @@ namespace MyApp
 
                         int recScoreTMP = recScore + RStart.Paths[REnd.Id].Count() * S.MoveCost;
 
-                        if (nStepScoreBest < recScoreTMP + GetRestMinScore(ShrimpsTmp, RoomsTmp))
-                        {
-                            //LastMovedShrimp = -1;
-                            return 1;
-                        }
+                        //if (nStepScoreBest < recScoreTMP + GetRestMinScore(ShrimpsTmp, RoomsTmp))
+                        //{
+                        //    //LastMovedShrimp = -1;
+                        //    //return 1;
+                        //    break;
+                        //}
 
                         if (startMoving(ShrimpsTmp, RoomsTmp, recScoreTMP) == 0)
                         {
@@ -299,7 +301,7 @@ namespace MyApp
                 }
 
             }
-            LastMovedShrimp = -1;
+            //LastMovedShrimp = -1;
             return 1;
         }
 
@@ -369,8 +371,8 @@ namespace MyApp
 
             GlobalShrimps = TempList;
 
-            //GlobalShrimps = TempList.OrderBy(s=>s.RoomId).ToList();
-            //GlobalShrimps.Reverse();
+            GlobalShrimps = TempList.OrderBy(s=>s.RoomId).ToList();
+            GlobalShrimps.Reverse();
         }
     
     
