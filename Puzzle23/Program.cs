@@ -10,7 +10,6 @@ namespace MyApp
         public string isOccupiedBy { get; set; }
         public List<int> Connections { get; }
         public bool isVisited { get; set; }
-
         public Dictionary<int, List<int>> Paths = new Dictionary<int, List<int>>();
         public Room()
         {
@@ -18,7 +17,6 @@ namespace MyApp
             isOccupiedBy = "";
             OpenFor = "ABCD";
             isVisited = false;
-
             Connections = new List<int>();
 
             if (Id >= 11)
@@ -28,18 +26,12 @@ namespace MyApp
                 if (Id % 4 == 1) OpenFor = "C";
                 if (Id % 4 == 2) OpenFor = "D";
             }
-
         }
         public object Clone()
         {
             return this.MemberwiseClone();
         }
-
-        public int GetSteps(Room REnd)
-        {
-            return this.Paths[REnd.Id].Count();
-        }
-
+        public static void ResetCounter() { IDcounter = 0; }
     }
 
     public class Shrimp
@@ -47,7 +39,6 @@ namespace MyApp
         private static int IDcounter = 0;
         public string Type { get; set; } // ABCD
         public int Id { get; set; }
-        public int MoveCount { get; set; }
         public int MoveCost { get; set; } // 1 - 1000
         public int RoomId { get; set; }
         public bool ImHome { get; set; }
@@ -57,9 +48,6 @@ namespace MyApp
             this.Id = IDcounter++;
             this.ImHome = false;
             this.Type = Type;
-            this.MoveCount = 0;
-            this.RoomId = RoomId;
-
             this.MoveCost = (Type == "A") ? 1 : (Type == "B") ? 10 : (Type == "C") ? 100 : (Type == "D") ? 1000 : -1;
         }
         public object Clone()
@@ -69,45 +57,24 @@ namespace MyApp
 
         public bool IsItHome(List<Room> Rooms, Room Rend)
         {
-            //if (Rend.OpenFor != Type)
-            //    return false;
-
-            //Room RMax = Rooms.Find(r => r.Id == Rend.Connections.Max());
-
-            //if (Type == Rend.OpenFor && (Rend.Connections.Count == 1 || RMax.isOccupiedBy == Type))
-            //    return true;
-
-            //return false;
-
-
-            //if (Rend.isOccupiedBy != "" || Rend.Id < 11 || Rend.OpenFor != Type)
-            //    return false;
             if (Rend.OpenFor != Type)
                 return false;
 
-
-            int i = Rend.Id + 4;
-            while (i < Rooms.Count)
-            {
+            for(int i = Rend.Id + 4; i < Rooms.Count; i+=4)
                 if (Rooms[i].isOccupiedBy != Type)
                     return false;
 
-                i += 4;
-            }
-
-
             return true;
         }
+        public static void ResetCounter() { IDcounter = 0; }
     }
 
     public class Program
     {
-        // Answers for Data_p.txt  Part 1:  11516    Part 2: 
-        static readonly string filePath = @".\..\..\..\Data_s.txt";
+        // Answers for Data_p.txt  Part 1:  11516    Part 2: 40272
 
         static int nStepScoreBest = int.MaxValue;
         static int LastMovedShrimp = -1;
-        static long Iterations = 0;
         static Stopwatch stopwatch;
 
         static List<Room> GlobalMap = new List<Room>();
@@ -115,46 +82,20 @@ namespace MyApp
 
         public static void Main(string[] args)
         {
-            ParsingInputData();
-
-            List<Room> Rooms = GlobalMap;
-
-            List<Shrimp> Shrimps = GlobalShrimps;
-
-            int i = 0;
-            foreach (Shrimp shrimp in Shrimps)
-            {
-                shrimp.Id = i++;
-                shrimp.ImHome = shrimp.IsItHome(Rooms, Rooms[shrimp.RoomId]);
-            }
-
-
-            foreach (Room RStart in Rooms)
-                foreach (Room REnd in Rooms)
-                    if (RStart.Id != REnd.Id)
-                    {
-                        List<int> tmp = GetFullPath(RStart, REnd, Rooms);
-                        tmp.Reverse();
-                        RStart.Paths.Add(REnd.Id, tmp);
-
-                        foreach (Room R in Rooms) R.isVisited = false;
-                    }
-
-
-            int a = GetRestMinScore(Shrimps, Rooms);
-
-
             stopwatch = new Stopwatch();
             stopwatch.Start();
 
-
-            startMoving(Shrimps, Rooms, 0);
-
-
+            ParsingInputData(@".\..\..\..\Data_t.txt");
+            startMoving(GlobalShrimps, GlobalMap, 0);
+            Console.WriteLine("Part one: {0, 10:0}", nStepScoreBest);
             Console.WriteLine("Total time {0,8:0.000} Seconds", stopwatch.ElapsedMilliseconds / 1000.0);
 
-            Console.WriteLine("Part one: {0, 10:0}", Iterations);
+            nStepScoreBest = int.MaxValue;
+            ParsingInputData(@".\..\..\..\Data_t2.txt");
+            startMoving(GlobalShrimps, GlobalMap, 0);
             Console.WriteLine("Part two: {0, 10:0}", nStepScoreBest);
+            Console.WriteLine("Total time {0,8:0.000} Seconds", stopwatch.ElapsedMilliseconds / 1000.0);
+
         }
 
         private static List<int> GetFullPath(Room rStart, Room Rend, List<Room> Rooms)
@@ -247,7 +188,6 @@ namespace MyApp
         private static int startMoving(List<Shrimp> Shrimps, List<Room> Rooms, int recScore)
         {
             LastMovedShrimp = -1;
-            Iterations++;
             if (nStepScoreBest <= recScore + GetRestMinScore(Shrimps, Rooms))
                 return 1;
 
@@ -282,12 +222,14 @@ namespace MyApp
 
                         int recScoreTMP = recScore + RStart.Paths[REnd.Id].Count() * S.MoveCost;
 
-                        //if (nStepScoreBest < recScoreTMP + GetRestMinScore(ShrimpsTmp, RoomsTmp))
-                        //{
-                        //    //LastMovedShrimp = -1;
-                        //    //return 1;
-                        //    break;
-                        //}
+
+                        // this block probably need to comment
+                        if (nStepScoreBest < recScoreTMP + GetRestMinScore(ShrimpsTmp, RoomsTmp))
+                        {
+                            //LastMovedShrimp = -1;
+                            //return 1;
+                            break;
+                        }
 
                         if (startMoving(ShrimpsTmp, RoomsTmp, recScoreTMP) == 0)
                         {
@@ -314,11 +256,12 @@ namespace MyApp
             return true;
         }
 
-        private static void ParsingInputData()
+        private static void ParsingInputData(string filePath)
         {
-
-            List<Shrimp> TempList = new List<Shrimp>();
-
+            GlobalMap.Clear();
+            GlobalShrimps.Clear();
+            Room.ResetCounter();
+            Shrimp.ResetCounter();
             int[,] map = new int[13, 7];
             int X = 0, Y = 0;
             using (StreamReader file = new(filePath))
@@ -337,7 +280,7 @@ namespace MyApp
                                 Shrimp S = new Shrimp(c.ToString());
                                 R.isOccupiedBy = S.Type;
                                 S.RoomId = R.Id;
-                                TempList.Add(S);
+                                GlobalShrimps.Add(S);
                             }
 
                             GlobalMap.Add(R);
@@ -348,13 +291,10 @@ namespace MyApp
                     Y++;
                 }
 
-
             for (int x = 0; x < 13; x++)
                 for (int y = 0; y < 7; y++)
-                {
                     if (map[x, y] >= 1000)
                     {
-
                         int RoomID = map[x, y] - 1000;
                         Room R = GlobalMap.Find(r => r.Id == RoomID);
 
@@ -367,16 +307,22 @@ namespace MyApp
                         if (map[x - 1, y] >= 1000)
                             R.Connections.Add(map[x - 1, y] - 1000);
                     }
-                }
 
-            GlobalShrimps = TempList;
 
-            GlobalShrimps = TempList.OrderBy(s=>s.RoomId).ToList();
-            GlobalShrimps.Reverse();
+            foreach (Shrimp shrimp in GlobalShrimps)
+                shrimp.ImHome = shrimp.IsItHome(GlobalMap, GlobalMap[shrimp.RoomId]);
+
+            foreach (Room RStart in GlobalMap)
+                foreach (Room REnd in GlobalMap)
+                    if (RStart.Id != REnd.Id)
+                    {
+                        List<int> tmp = GetFullPath(RStart, REnd, GlobalMap);
+                        tmp.Reverse();
+                        RStart.Paths.Add(REnd.Id, tmp);
+
+                        foreach (Room R in GlobalMap) R.isVisited = false;
+                    }
+
         }
-    
-    
-    
-    // the end
     }
 }
