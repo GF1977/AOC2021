@@ -7,15 +7,12 @@ namespace MyApp
         private static int IDcounter = 0;
         public int Id { get; }
         public string OpenFor { get; set; } // ABCD
-        public string isOccupiedBy { get; set; }
         public List<int> Connections { get; }
         public bool isVisited { get; set; }
         public Dictionary<int, List<int>> Paths = new Dictionary<int, List<int>>();
         public Room()
         {
             Id = IDcounter++;
-            isOccupiedBy = "";
-            OpenFor = "ABCD";
             isVisited = false;
             Connections = new List<int>();
 
@@ -26,14 +23,11 @@ namespace MyApp
                 if (Id % 4 == 1) OpenFor = "C";
                 if (Id % 4 == 2) OpenFor = "D";
             }
-        }
-        public object Clone()
-        {
-            return this.MemberwiseClone();
+            else
+                            OpenFor = "ABCD";
         }
         public static void ResetCounter() { IDcounter = 0; }
     }
-
     public class Shrimp
     {
         private static int IDcounter = 0;
@@ -55,13 +49,13 @@ namespace MyApp
             return this.MemberwiseClone();
         }
 
-        public bool IsItHome(List<Room> Rooms, Room Rend)
+        public bool IsItRightDestination(List<Shrimp> Shrimps, int RoomsCount, Room Rend)
         {
             if (Rend.OpenFor != Type)
                 return false;
 
-            for(int i = Rend.Id + 4; i < Rooms.Count; i+=4)
-                if (Rooms[i].isOccupiedBy != Type)
+            for(int i = Rend.Id + 4; i < RoomsCount; i+=4)
+                if (Program.WhoInTheRoom(i, Shrimps) != Type)
                     return false;
 
             return true;
@@ -74,7 +68,7 @@ namespace MyApp
         // Answers for Data_p.txt  Part 1:  11516    Part 2: 40272
 
         static int nMinimalEnergy = int.MaxValue;
-        static int LastMovedShrimp = -1;
+        //static int LastMovedShrimp = -1;
         static Stopwatch stopwatch;
 
         static List<Room> GlobalMap = new List<Room>();
@@ -85,19 +79,26 @@ namespace MyApp
             stopwatch = new Stopwatch();
             stopwatch.Start();
             SolveTheProblem(@".\..\..\..\Data_s.txt");
+            SolveTheProblem(@".\..\..\..\Data_t.txt");
+            SolveTheProblem(@".\..\..\..\Data_pIO.txt");
+
             SolveTheProblem(@".\..\..\..\Data_s2.txt");
+            SolveTheProblem(@".\..\..\..\Data_t2.txt");
+            SolveTheProblem(@".\..\..\..\Data_p2.txt");
         }
 
         private static void SolveTheProblem(string filepath)
         {
+            Console.WriteLine("Calculation started: {0}", filepath);
             nMinimalEnergy = int.MaxValue;
             ParsingInputData(filepath);
-            startMoving(GlobalShrimps, GlobalMap, 0);
+            startMoving(GlobalShrimps, 0);
             Console.WriteLine("Energy: {0, 9:0}", nMinimalEnergy);
             Console.WriteLine("Total time {0,8:0.000} Seconds", stopwatch.ElapsedMilliseconds / 1000.0);
+            Console.WriteLine();
         }
 
-        private static List<int> GetFullPath(Room rStart, Room Rend, List<Room> Rooms)
+        private static List<int> GetFullPath(Room rStart, Room Rend)
         {
             rStart.isVisited = true;
 
@@ -105,9 +106,9 @@ namespace MyApp
                 return new List<int>();
 
             foreach (int id in rStart.Connections)
-                if (!Rooms[id].isVisited)
+                if (!GlobalMap[id].isVisited)
                 {
-                    List<int> Res = GetFullPath(Rooms[id], Rend, Rooms);
+                    List<int> Res = GetFullPath(GlobalMap[id], Rend);
                     if (Res != null)
                     {
                         Res.Add(id);
@@ -118,68 +119,37 @@ namespace MyApp
             return null;
         }
 
-        public static bool isMovable(Shrimp S, int toRoom, List<Room> Rooms)
+        public static string WhoInTheRoom(int RoomId, List<Shrimp> Shrimps)
         {
-            if (S.ImHome) return false;
-            if (S.Id == LastMovedShrimp) return false;
-
-            if (S.RoomId == toRoom || Rooms[toRoom].isOccupiedBy != "")
-                return false;
-
-            if (Rooms[S.RoomId].OpenFor == "ABCD" && !S.IsItHome(Rooms, Rooms[toRoom]))
-                return false;
-
-            if (Rooms[toRoom].Connections.Count == 3)
-                return false;
-
-            if (Rooms[toRoom].Id >= 11 && Rooms[toRoom].OpenFor != S.Type)
-                return false;
-
-            foreach (int id in Rooms[S.RoomId].Paths[toRoom])
-                if (Rooms[id].isOccupiedBy != "") return false;
-
-            return true;
-        }
-
-        internal static void MoveTo(Shrimp S, int toRoom, List<Shrimp> Shrimps, List<Room> Rooms)
-        {
-            LastMovedShrimp = S.Id;
-
-            Rooms[S.RoomId].isOccupiedBy = "";
-            Rooms[toRoom].isOccupiedBy = S.Type;
-
-            if (Rooms[toRoom].OpenFor == S.Type)
-                S.ImHome = true;
-
-            S.RoomId = Rooms[toRoom].Id;
+            foreach (Shrimp S in Shrimps)
+                if (S.RoomId == RoomId)
+                    return S.Type;
+            
+            return "";
         }
 
 
-        private static int GetRestMinEnergy(List<Shrimp> Shrimps, List<Room> Rooms)
+        private static int GetRestMinEnergy(List<Shrimp> Shrimps)
         {
-            List<int> OccupiedRoom = new List<int>();
+            bool[] OccupiedRoom = new bool[27];
             int Res = 0;
             foreach(Shrimp S in Shrimps)
-            {
                 if(!S.ImHome)
-                {
-                    foreach (Room R in Rooms.Where(r=>r.Id!=S.RoomId && r.Id >= 11))
-                        if (R.OpenFor == S.Type && !OccupiedRoom.Contains(R.Id))
+                    foreach (Room REnd in GlobalMap.Where(r=>r.Id!=S.RoomId && r.Id >= 11))
+                        if (REnd.OpenFor == S.Type && !OccupiedRoom[REnd.Id])
                         {
-                            Res += S.MoveCost * R.Paths[S.RoomId].Count();
-                            OccupiedRoom.Add(R.Id);
+                            Res += S.MoveCost * REnd.Paths[S.RoomId].Count();
+                            OccupiedRoom[REnd.Id] = true;
                             break;
                         }
-                }
-            }
 
             return Res;
         }
 
-        private static int startMoving(List<Shrimp> Shrimps, List<Room> Rooms, int recEnergy)
+        private static int startMoving(List<Shrimp> Shrimps, int recEnergy)
         {
-            LastMovedShrimp = -1;
-            if (nMinimalEnergy <= recEnergy + GetRestMinEnergy(Shrimps, Rooms))
+            //LastMovedShrimp = -1;
+            if (nMinimalEnergy <= recEnergy + GetRestMinEnergy(Shrimps))
                 return 1;
 
             if (isCorrectOrder(Shrimps))
@@ -191,45 +161,59 @@ namespace MyApp
                 return 0;
             }
 
-
-            foreach (Shrimp S in Shrimps)
+            foreach (Shrimp S in Shrimps.Where(s=>s.ImHome == false)) // Skip Shrimp who is in the right place
             {
-                Room RStart = Rooms[S.RoomId];
+                Room RStart = GlobalMap[S.RoomId];
 
-                foreach (Room REnd in Rooms)
+                foreach (Room REnd in GlobalMap.Where(r=>r.Connections.Count !=3)) // Skip room right above the caves
                 {
-                    if (Rooms[S.RoomId].isOccupiedBy == "ADBC" && REnd.OpenFor != S.Type)
+                    if (S.RoomId == REnd.Id) // Skip where Start == End 
                         continue;
-                    if (isMovable(S, REnd.Id, Rooms))
+
+                    if (REnd.Id >= 11 && REnd.OpenFor != S.Type) // Skip rooms which are not for this type (A goes to A, B to B etc)
+                        continue;
+
+                    if (WhoInTheRoom(REnd.Id, Shrimps) != "") // Skip where the room is occupied
+                        continue;
+
+                    if (RStart.OpenFor == "ABCD" && !S.IsItRightDestination(Shrimps, GlobalMap.Count, REnd)) // skip if a shrimps moves from corridor to not the right place
+                        continue;
+
+                    bool PathIsBlocked = false;
+                    foreach (int id in RStart.Paths[REnd.Id])
+                        if (WhoInTheRoom(id, Shrimps) != "")
+                        {
+                            PathIsBlocked = true;
+                            break;
+                        }
+
+                    if (!PathIsBlocked)
                     {
-
-                        List<Room> RoomsTmp = new List<Room>();
-                        foreach (Room RR in Rooms)
-                            RoomsTmp.Add((Room)RR.Clone());
-
                         List<Shrimp> ShrimpsTmp = new List<Shrimp>();
                         foreach (Shrimp SS in Shrimps)
                             ShrimpsTmp.Add((Shrimp)SS.Clone());
 
-                        MoveTo(ShrimpsTmp[S.Id], REnd.Id, ShrimpsTmp, RoomsTmp);
+                        Shrimp STmp = ShrimpsTmp[S.Id];
+
+                       // Move Shrimp
+                        STmp.RoomId = REnd.Id;
+
+                        if (REnd.OpenFor == STmp.Type)
+                            STmp.ImHome = true;
+                        // Move End
+
                         int recEnergyTMP = recEnergy + RStart.Paths[REnd.Id].Count() * S.MoveCost;
 
-                        int a = GetRestMinEnergy(ShrimpsTmp, RoomsTmp);
-                        if (nMinimalEnergy < recEnergy + a)
-                        {
-                            LastMovedShrimp = -1;
+                        int a = GetRestMinEnergy(ShrimpsTmp);
+                        if (nMinimalEnergy < recEnergyTMP + a - 6000)
                             break;
-                        }
 
-                        if (startMoving(ShrimpsTmp, RoomsTmp, recEnergyTMP) == 0)
-                        {
+                        if (startMoving(ShrimpsTmp, recEnergyTMP) == 0)
                             return 1;
-                        }
                     }
                 }
 
             }
-            //LastMovedShrimp = -1;
             return 1;
         }
 
@@ -264,7 +248,7 @@ namespace MyApp
                             if (c != '.')
                             {
                                 Shrimp S = new Shrimp(c.ToString());
-                                R.isOccupiedBy = S.Type;
+                                //R.isOccupiedBy = S.Type;
                                 S.RoomId = R.Id;
                                 GlobalShrimps.Add(S);
                             }
@@ -296,13 +280,13 @@ namespace MyApp
 
 
             foreach (Shrimp shrimp in GlobalShrimps)
-                shrimp.ImHome = shrimp.IsItHome(GlobalMap, GlobalMap[shrimp.RoomId]);
+                shrimp.ImHome = shrimp.IsItRightDestination(GlobalShrimps,GlobalMap.Count, GlobalMap[shrimp.RoomId]);
 
             foreach (Room RStart in GlobalMap)
                 foreach (Room REnd in GlobalMap)
                     if (RStart.Id != REnd.Id)
                     {
-                        List<int> tmp = GetFullPath(RStart, REnd, GlobalMap);
+                        List<int> tmp = GetFullPath(RStart, REnd);
                         tmp.Reverse();
                         RStart.Paths.Add(REnd.Id, tmp);
 
