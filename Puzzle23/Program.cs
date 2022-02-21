@@ -73,7 +73,7 @@ namespace MyApp
     {
         // Answers for Data_p.txt  Part 1:  11516    Part 2: 40272
 
-        static int nStepScoreBest = int.MaxValue;
+        static int nMinimalEnergy = int.MaxValue;
         static int LastMovedShrimp = -1;
         static Stopwatch stopwatch;
 
@@ -84,18 +84,17 @@ namespace MyApp
         {
             stopwatch = new Stopwatch();
             stopwatch.Start();
+            SolveTheProblem(@".\..\..\..\Data_s.txt");
+            SolveTheProblem(@".\..\..\..\Data_s2.txt");
+        }
 
-            ParsingInputData(@".\..\..\..\Data_s.txt");
+        private static void SolveTheProblem(string filepath)
+        {
+            nMinimalEnergy = int.MaxValue;
+            ParsingInputData(filepath);
             startMoving(GlobalShrimps, GlobalMap, 0);
-            Console.WriteLine("Part one: {0, 10:0}", nStepScoreBest);
+            Console.WriteLine("Energy: {0, 9:0}", nMinimalEnergy);
             Console.WriteLine("Total time {0,8:0.000} Seconds", stopwatch.ElapsedMilliseconds / 1000.0);
-
-            nStepScoreBest = int.MaxValue;
-            ParsingInputData(@".\..\..\..\Data_s2.txt");
-            startMoving(GlobalShrimps, GlobalMap, 0);
-            Console.WriteLine("Part two: {0, 10:0}", nStepScoreBest);
-            Console.WriteLine("Total time {0,8:0.000} Seconds", stopwatch.ElapsedMilliseconds / 1000.0);
-
         }
 
         private static List<int> GetFullPath(Room rStart, Room Rend, List<Room> Rooms)
@@ -146,24 +145,17 @@ namespace MyApp
         {
             LastMovedShrimp = S.Id;
 
-            Room Rstart = Rooms[S.RoomId];
-            Room Rend = Rooms[toRoom];
+            Rooms[S.RoomId].isOccupiedBy = "";
+            Rooms[toRoom].isOccupiedBy = S.Type;
 
-            //string Res = S.Type.ToString() + S.Id.ToString() + " moves from " + Rstart.Id + " to " + Rend.Id;
-
-            Rstart.isOccupiedBy = "";
-            Rend.isOccupiedBy = S.Type;
-
-            if (Rend.OpenFor == S.Type)
+            if (Rooms[toRoom].OpenFor == S.Type)
                 S.ImHome = true;
 
-            S.RoomId = Rend.Id;
-
-            //return Res;
+            S.RoomId = Rooms[toRoom].Id;
         }
 
 
-        private static int GetRestMinScore(List<Shrimp> Shrimps, List<Room> Rooms)
+        private static int GetRestMinEnergy(List<Shrimp> Shrimps, List<Room> Rooms)
         {
             List<int> OccupiedRoom = new List<int>();
             int Res = 0;
@@ -178,23 +170,24 @@ namespace MyApp
                             OccupiedRoom.Add(R.Id);
                             break;
                         }
-
                 }
             }
 
             return Res;
         }
 
-        private static int startMoving(List<Shrimp> Shrimps, List<Room> Rooms, int recScore)
+        private static int startMoving(List<Shrimp> Shrimps, List<Room> Rooms, int recEnergy)
         {
             LastMovedShrimp = -1;
-            if (nStepScoreBest <= recScore + GetRestMinScore(Shrimps, Rooms))
+            if (nMinimalEnergy <= recEnergy + GetRestMinEnergy(Shrimps, Rooms))
                 return 1;
 
             if (isCorrectOrder(Shrimps))
             {
-                //LastMovedShrimp = -1;
-                Console.WriteLine("Best score: {0}   - time {1,8:0.000} Seconds", recScore, stopwatch.ElapsedMilliseconds / 1000.0);
+                if (recEnergy < nMinimalEnergy)
+                    nMinimalEnergy = recEnergy;
+
+                //Console.WriteLine("Best Energy: {0,5:0}   - time {1,8:0.000} Seconds", recEnergy, stopwatch.ElapsedMilliseconds / 1000.0);
                 return 0;
             }
 
@@ -219,24 +212,17 @@ namespace MyApp
                             ShrimpsTmp.Add((Shrimp)SS.Clone());
 
                         MoveTo(ShrimpsTmp[S.Id], REnd.Id, ShrimpsTmp, RoomsTmp);
+                        int recEnergyTMP = recEnergy + RStart.Paths[REnd.Id].Count() * S.MoveCost;
 
-                        int recScoreTMP = recScore + RStart.Paths[REnd.Id].Count() * S.MoveCost;
-
-
-                        // this block probably need to comment
-                        if (nStepScoreBest < recScoreTMP)// + GetRestMinScore(ShrimpsTmp, RoomsTmp))
+                        int a = GetRestMinEnergy(ShrimpsTmp, RoomsTmp);
+                        if (nMinimalEnergy < recEnergy + a)
                         {
-                            //LastMovedShrimp = -1;
-                            //return 1;
+                            LastMovedShrimp = -1;
                             break;
                         }
 
-                        if (startMoving(ShrimpsTmp, RoomsTmp, recScoreTMP) == 0)
+                        if (startMoving(ShrimpsTmp, RoomsTmp, recEnergyTMP) == 0)
                         {
-                            if (recScoreTMP < nStepScoreBest && recScoreTMP > 0)
-                                nStepScoreBest = recScoreTMP;
-                            
-                            //LastMovedShrimp = -1;
                             return 1;
                         }
                     }
