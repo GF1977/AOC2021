@@ -85,13 +85,13 @@ namespace MyApp
             stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            ParsingInputData(@".\..\..\..\Data_t.txt");
+            ParsingInputData(@".\..\..\..\Data_s.txt");
             startMoving(GlobalShrimps, GlobalMap, 0);
             Console.WriteLine("Part one: {0, 10:0}", nStepScoreBest);
             Console.WriteLine("Total time {0,8:0.000} Seconds", stopwatch.ElapsedMilliseconds / 1000.0);
 
             nStepScoreBest = int.MaxValue;
-            ParsingInputData(@".\..\..\..\Data_t2.txt");
+            ParsingInputData(@".\..\..\..\Data_s2.txt");
             startMoving(GlobalShrimps, GlobalMap, 0);
             Console.WriteLine("Part two: {0, 10:0}", nStepScoreBest);
             Console.WriteLine("Total time {0,8:0.000} Seconds", stopwatch.ElapsedMilliseconds / 1000.0);
@@ -193,7 +193,7 @@ namespace MyApp
 
             if (isCorrectOrder(Shrimps))
             {
-                
+                //LastMovedShrimp = -1;
                 Console.WriteLine("Best score: {0}   - time {1,8:0.000} Seconds", recScore, stopwatch.ElapsedMilliseconds / 1000.0);
                 return 0;
             }
@@ -224,7 +224,7 @@ namespace MyApp
 
 
                         // this block probably need to comment
-                        if (nStepScoreBest < recScoreTMP + GetRestMinScore(ShrimpsTmp, RoomsTmp))
+                        if (nStepScoreBest < recScoreTMP)// + GetRestMinScore(ShrimpsTmp, RoomsTmp))
                         {
                             //LastMovedShrimp = -1;
                             //return 1;
