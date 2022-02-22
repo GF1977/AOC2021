@@ -158,7 +158,7 @@ namespace MyApp
                     nMinimalEnergy = recEnergy;
 
                 //Console.WriteLine("Best Energy: {0,5:0}   - time {1,8:0.000} Seconds", recEnergy, stopwatch.ElapsedMilliseconds / 1000.0);
-                return 0;
+                return recEnergy;
             }
 
             foreach (Shrimp S in Shrimps.Where(s=>s.ImHome == false)) // Skip Shrimp who is in the right place
@@ -200,16 +200,14 @@ namespace MyApp
 
                         if (REnd.OpenFor == STmp.Type)
                             STmp.ImHome = true;
+
+                        int nMoveCost = RStart.Paths[REnd.Id].Count() * S.MoveCost;
                         // Move End
 
-                        int recEnergyTMP = recEnergy + RStart.Paths[REnd.Id].Count() * S.MoveCost;
-
-                        int a = GetRestMinEnergy(ShrimpsTmp);
-                        if (nMinimalEnergy < recEnergyTMP + a - 6000)
-                            break;
-
-                        if (startMoving(ShrimpsTmp, recEnergyTMP) == 0)
-                            return 1;
+                        if (nMinimalEnergy > recEnergy + nMoveCost +GetRestMinEnergy(ShrimpsTmp))
+                        {
+                            startMoving(ShrimpsTmp, recEnergy + nMoveCost);
+                        }
                     }
                 }
 
