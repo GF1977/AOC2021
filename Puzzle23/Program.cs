@@ -167,27 +167,9 @@ namespace MyApp
 
                 foreach (Room REnd in GlobalMap.Where(r=>r.Connections.Count !=3)) // Skip room right above the caves
                 {
-                    if (S.RoomId == REnd.Id) // Skip where Start == End 
-                        continue;
 
-                    if (REnd.Id >= 11 && REnd.OpenFor != S.Type) // Skip rooms which are not for this type (A goes to A, B to B etc)
-                        continue;
 
-                    if (WhoInTheRoom(REnd.Id, Shrimps) != "") // Skip where the room is occupied
-                        continue;
-
-                    if (RStart.OpenFor == "ABCD" && !S.IsItRightDestination(Shrimps, GlobalMap.Count, REnd)) // skip if a shrimps moves from corridor to not the right place
-                        continue;
-
-                    bool PathIsBlocked = false;
-                    foreach (int id in RStart.Paths[REnd.Id])
-                        if (WhoInTheRoom(id, Shrimps) != "")
-                        {
-                            PathIsBlocked = true;
-                            break;
-                        }
-
-                    if (!PathIsBlocked)
+                    if (IsGoodToMove(S, REnd, RStart, Shrimps))
                     {
                         List<Shrimp> ShrimpsTmp = new List<Shrimp>();
                         foreach (Shrimp SS in Shrimps)
@@ -213,6 +195,28 @@ namespace MyApp
 
             }
             return 1;
+        }
+
+        private static bool IsGoodToMove(Shrimp S, Room REnd, Room RStart, List<Shrimp> Shrimps)
+        {
+            if (S.RoomId == REnd.Id) // Skip where Start == End 
+                return false;
+
+            if (REnd.Id >= 11 && REnd.OpenFor != S.Type) // Skip rooms which are not for this type (A goes to A, B to B etc)
+                return false;
+
+            if (WhoInTheRoom(REnd.Id, Shrimps) != "") // Skip where the room is occupied
+                return false;
+
+            if (RStart.OpenFor == "ABCD" && !S.IsItRightDestination(Shrimps, GlobalMap.Count, REnd)) // skip if a shrimps moves from corridor to not the right place
+                return false;
+
+            bool PathIsBlocked = false;
+            foreach (int id in RStart.Paths[REnd.Id])
+                if (WhoInTheRoom(id, Shrimps) != "")
+                    return false;
+
+            return true;
         }
 
         private static bool isCorrectOrder(List<Shrimp> Shrimps)
