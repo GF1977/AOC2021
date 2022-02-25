@@ -49,13 +49,13 @@ namespace MyApp
             return this.MemberwiseClone();
         }
 
-        public bool IsItRightDestination(List<Shrimp> Shrimps, int RoomsCount, Room Rend)
+        public bool IsItRightDestination(int RoomsCount, Room Rend, char[] roomOccupied)
         {
             if (Rend.OpenFor != Type)
                 return false;
 
             for(int i = Rend.Id + 4; i < RoomsCount; i+=4)
-                if (Program.WhoInTheRoom(i, Shrimps) != Type)
+                if (Program.WhoInTheRoom(i, roomOccupied) != Type)
                     return false;
 
             return true;
@@ -73,29 +73,39 @@ namespace MyApp
 
         static List<Room> GlobalMap = new List<Room>();
         static List<Shrimp> GlobalShrimps = new List<Shrimp>();
+        static List<string> Queue = new List<string>();
+        static List<string> BestQueue = new List<string>();
+        static char[] roomOccupied = new char[27];
+
 
         public static void Main(string[] args)
         {
             stopwatch = new Stopwatch();
-            stopwatch.Start();
-            SolveTheProblem(@".\..\..\..\Data_s.txt");
-            SolveTheProblem(@".\..\..\..\Data_t.txt");
-            SolveTheProblem(@".\..\..\..\Data_pIO.txt");
+            //stopwatch.Start();
+            //SolveTheProblem(@".\..\..\..\Data_s.txt");
+            //SolveTheProblem(@".\..\..\..\Data_t.txt");
+            //SolveTheProblem(@".\..\..\..\Data_pIO.txt");
+            //SolveTheProblem(@".\..\..\..\Data_p.txt");
 
-            SolveTheProblem(@".\..\..\..\Data_s2.txt");
-            SolveTheProblem(@".\..\..\..\Data_t2.txt");
-            SolveTheProblem(@".\..\..\..\Data_p2.txt");
+            //SolveTheProblem(@".\..\..\..\Data_s2.txt");
+            //SolveTheProblem(@".\..\..\..\Data_t2.txt");
+            SolveTheProblem(@".\..\..\..\Data_pIO2.txt");
+            //SolveTheProblem(@".\..\..\..\Data_p2.txt");
         }
 
         private static void SolveTheProblem(string filepath)
         {
+            stopwatch.Restart();
             Console.WriteLine("Calculation started: {0}", filepath);
             nMinimalEnergy = int.MaxValue;
             ParsingInputData(filepath);
-            startMoving(GlobalShrimps, 0);
+            startMoving(GlobalShrimps, 0, roomOccupied);
             Console.WriteLine("Energy: {0, 9:0}", nMinimalEnergy);
             Console.WriteLine("Total time {0,8:0.000} Seconds", stopwatch.ElapsedMilliseconds / 1000.0);
             Console.WriteLine();
+
+            //foreach(string s in BestQueue)
+            //    Console.WriteLine(s);
         }
 
         private static List<int> GetFullPath(Room rStart, Room Rend)
@@ -118,14 +128,9 @@ namespace MyApp
 
             return null;
         }
-
-        public static string WhoInTheRoom(int RoomId, List<Shrimp> Shrimps)
+        public static string WhoInTheRoom(int RoomId, char[] roomOccupied)
         {
-            foreach (Shrimp S in Shrimps)
-                if (S.RoomId == RoomId)
-                    return S.Type;
-            
-            return "";
+            return roomOccupied[RoomId].ToString();
         }
 
 
@@ -145,8 +150,16 @@ namespace MyApp
 
             return Res;
         }
+        private static bool IsOptimalMove(Shrimp S, Room REnd, Room RStart)
+        {
+            if(S.RoomId > 10 )
+            {
 
-        private static int startMoving(List<Shrimp> Shrimps, int recEnergy)
+            }
+
+            return true;
+        }
+        private static int startMoving(List<Shrimp> Shrimps, int recEnergy, char[] rOc)
         {
             //LastMovedShrimp = -1;
             if (nMinimalEnergy <= recEnergy + GetRestMinEnergy(Shrimps))
@@ -155,49 +168,145 @@ namespace MyApp
             if (isCorrectOrder(Shrimps))
             {
                 if (recEnergy < nMinimalEnergy)
+                {
                     nMinimalEnergy = recEnergy;
-
+                    BestQueue.Clear();
+                    foreach(string s in Queue)
+                        BestQueue.Add(s);
+                    
+                }
+                Queue.Clear();
                 //Console.WriteLine("Best Energy: {0,5:0}   - time {1,8:0.000} Seconds", recEnergy, stopwatch.ElapsedMilliseconds / 1000.0);
                 return recEnergy;
             }
 
+
+
             foreach (Shrimp S in Shrimps.Where(s=>s.ImHome == false)) // Skip Shrimp who is in the right place
             {
                 Room RStart = GlobalMap[S.RoomId];
+                int[] BestRoomOrder = new int[GlobalMap.Count];
+                int RoomCount;
 
-                foreach (Room REnd in GlobalMap.Where(r=>r.Connections.Count !=3)) // Skip room right above the caves
+                if (GlobalMap.Count == 27)
+                    RoomCount = 11;
+                else
+                    RoomCount = 9;
+
+                if (S.Type == "D")
                 {
+                    BestRoomOrder[0] = 26;
+                    BestRoomOrder[1] = 22;
+                    BestRoomOrder[2] = 18;
+                    BestRoomOrder[3] = 14;
+                    BestRoomOrder[4] = 9;
+                    BestRoomOrder[5] = 7;
+                    BestRoomOrder[6] = -1;
+                    BestRoomOrder[7] = 5;
+                    BestRoomOrder[8] = 3;
+                    BestRoomOrder[9] = -1;
+                    BestRoomOrder[10] = -1;
+                }
+
+                if (S.Type == "C")
+                {
+                    BestRoomOrder[0] = 25;
+                    BestRoomOrder[1] = 21;
+                    BestRoomOrder[2] = 17;
+                    BestRoomOrder[3] = 13;
+                    BestRoomOrder[4] = 7;
+                    BestRoomOrder[5] = 5;
+                    BestRoomOrder[6] = 9;
+                    BestRoomOrder[7] = 3;
+                    BestRoomOrder[8] = -1;
+                    BestRoomOrder[9] = 1;
+                    BestRoomOrder[10] = 0;
+                    BestRoomOrder[10] = -1;
+                }
+
+                if (S.Type == "B")
+                {
+                    BestRoomOrder[0] = 24;
+                    BestRoomOrder[1] = 20;
+                    BestRoomOrder[2] = 16;
+                    BestRoomOrder[3] = 12;
+                    BestRoomOrder[4] = 3;
+                    BestRoomOrder[5] = 5;
+                    BestRoomOrder[6] = 1;
+                    BestRoomOrder[7] = 7;
+                    BestRoomOrder[8] = 0;
+                    BestRoomOrder[9] = 9;
+                    BestRoomOrder[10] = 10;
+                    BestRoomOrder[11] = -1;
+                }
+
+                if (S.Type == "A")
+                {
+                    BestRoomOrder[0] = 23;
+                    BestRoomOrder[1] = 19;
+                    BestRoomOrder[2] = 15;
+                    BestRoomOrder[3] = 11;
+                    BestRoomOrder[4] = 1;
+                    BestRoomOrder[5] = 3;
+                    BestRoomOrder[6] = 0;
+                    BestRoomOrder[7] = 5;
+                    BestRoomOrder[8] = 7;
+                    BestRoomOrder[9] = 9;
+                    BestRoomOrder[10] = 10;
+                    BestRoomOrder[11] = -1;
+                }
 
 
-                    if (IsGoodToMove(S, REnd, RStart, Shrimps))
+                //foreach (Room REnd in GlobalMap.Where(r=>r.Connections.Count !=3)) // Skip room right above the caves
+                for (int xx = 0; xx < RoomCount; xx++)
+                {
+                   if (BestRoomOrder[xx] == -1 || BestRoomOrder[xx] >= GlobalMap.Count)
+                            continue;
+
+                   Room REnd = GlobalMap[BestRoomOrder[xx]];
+                    //if (!IsOptimalMove(S, RStart, REnd))
+                    //    continue;
+
+                    if (IsGoodToMove(S, REnd, RStart, rOc))
                     {
                         List<Shrimp> ShrimpsTmp = new List<Shrimp>();
                         foreach (Shrimp SS in Shrimps)
                             ShrimpsTmp.Add((Shrimp)SS.Clone());
 
+                        char[] roomOccupiedTMP = new char[27];
+                        for(int i = 0; i < roomOccupiedTMP.Length; i++)
+                        roomOccupiedTMP[i] = rOc[i];
+
                         Shrimp STmp = ShrimpsTmp[S.Id];
 
-                       // Move Shrimp
+                        // Move Shrimp
+                        roomOccupiedTMP[STmp.RoomId] = '\0';
                         STmp.RoomId = REnd.Id;
+                        roomOccupiedTMP[STmp.RoomId] = STmp.Type[0];
 
                         if (REnd.OpenFor == STmp.Type)
                             STmp.ImHome = true;
 
                         int nMoveCost = RStart.Paths[REnd.Id].Count() * S.MoveCost;
+                        string sMove = S.Type+S.Id+ "   "+ RStart.Id + " -> "+REnd.Id;
+                        Queue.Add(sMove);
                         // Move End
 
                         if (nMinimalEnergy > recEnergy + nMoveCost +GetRestMinEnergy(ShrimpsTmp))
                         {
-                            startMoving(ShrimpsTmp, recEnergy + nMoveCost);
+                            startMoving(ShrimpsTmp, recEnergy + nMoveCost, roomOccupiedTMP);
                         }
                     }
                 }
 
             }
+            Queue.Clear();
             return 1;
         }
 
-        private static bool IsGoodToMove(Shrimp S, Room REnd, Room RStart, List<Shrimp> Shrimps)
+
+
+        private static bool IsGoodToMove(Shrimp S, Room REnd, Room RStart, char[] roomOccupied)
         {
             if (S.RoomId == REnd.Id) // Skip where Start == End 
                 return false;
@@ -205,15 +314,15 @@ namespace MyApp
             if (REnd.Id >= 11 && REnd.OpenFor != S.Type) // Skip rooms which are not for this type (A goes to A, B to B etc)
                 return false;
 
-            if (WhoInTheRoom(REnd.Id, Shrimps) != "") // Skip where the room is occupied
+            if (WhoInTheRoom(REnd.Id, roomOccupied) != "\0") // Skip where the room is occupied
                 return false;
 
-            if (RStart.OpenFor == "ABCD" && !S.IsItRightDestination(Shrimps, GlobalMap.Count, REnd)) // skip if a shrimps moves from corridor to not the right place
+            if (RStart.OpenFor == "ABCD" && !S.IsItRightDestination(GlobalMap.Count, REnd, roomOccupied)) // skip if a shrimps moves from corridor to not the right place
                 return false;
 
             bool PathIsBlocked = false;
             foreach (int id in RStart.Paths[REnd.Id])
-                if (WhoInTheRoom(id, Shrimps) != "")
+                if (WhoInTheRoom(id, roomOccupied) != "\0")
                     return false;
 
             return true;
@@ -250,7 +359,7 @@ namespace MyApp
                             if (c != '.')
                             {
                                 Shrimp S = new Shrimp(c.ToString());
-                                //R.isOccupiedBy = S.Type;
+                                roomOccupied[R.Id] = S.Type[0];
                                 S.RoomId = R.Id;
                                 GlobalShrimps.Add(S);
                             }
@@ -280,9 +389,8 @@ namespace MyApp
                             R.Connections.Add(map[x - 1, y] - 1000);
                     }
 
-
             foreach (Shrimp shrimp in GlobalShrimps)
-                shrimp.ImHome = shrimp.IsItRightDestination(GlobalShrimps,GlobalMap.Count, GlobalMap[shrimp.RoomId]);
+                shrimp.ImHome = shrimp.IsItRightDestination(GlobalMap.Count, GlobalMap[shrimp.RoomId], roomOccupied);
 
             foreach (Room RStart in GlobalMap)
                 foreach (Room REnd in GlobalMap)
