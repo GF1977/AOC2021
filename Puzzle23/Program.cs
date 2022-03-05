@@ -67,14 +67,14 @@ namespace MyApp
     {
         // Answers for Data_p.txt  Part 1:  11516    Part 2: 40272
 
-        static int nMinimalEnergy = int.MaxValue;
-        //static int LastMovedShrimp = -1;
+        static int nMinimalEnergy;
+        static int LastMovedShrimp = -1;
         static Stopwatch stopwatch;
 
         static List<Room> GlobalMap = new List<Room>();
         static List<Shrimp> GlobalShrimps = new List<Shrimp>();
-        static List<string> Queue = new List<string>();
-        static List<string> BestQueue = new List<string>();
+        //static List<string> Queue = new List<string>();
+        //static List<string> BestQueue = new List<string>();
         static char[] roomOccupied = new char[27];
 
 
@@ -82,28 +82,30 @@ namespace MyApp
         {
             stopwatch = new Stopwatch();
             //stopwatch.Start();
-            //SolveTheProblem(@".\..\..\..\Data_s.txt");
-            //SolveTheProblem(@".\..\..\..\Data_t.txt");
-            //SolveTheProblem(@".\..\..\..\Data_pIO.txt");
-            //SolveTheProblem(@".\..\..\..\Data_p.txt");
+            SolveTheProblem(@".\..\..\..\Data_s.txt");
+            SolveTheProblem(@".\..\..\..\Data_t.txt");
+            SolveTheProblem(@".\..\..\..\Data_pIO.txt");
+            SolveTheProblem(@".\..\..\..\Data_p.txt");
 
-            //SolveTheProblem(@".\..\..\..\Data_s2.txt");
-            //SolveTheProblem(@".\..\..\..\Data_t2.txt");
+            SolveTheProblem(@".\..\..\..\Data_s2.txt");
+            SolveTheProblem(@".\..\..\..\Data_t2.txt");
             SolveTheProblem(@".\..\..\..\Data_pIO2.txt");
-            //SolveTheProblem(@".\..\..\..\Data_p2.txt");
+            SolveTheProblem(@".\..\..\..\Data_p2.txt");
         }
 
         private static void SolveTheProblem(string filepath)
         {
-            stopwatch.Restart();
+            stopwatch.Reset();
+            stopwatch.Start();
             Console.WriteLine("Calculation started: {0}", filepath);
-            nMinimalEnergy = int.MaxValue;
+            nMinimalEnergy =  int.MaxValue;
             ParsingInputData(filepath);
             startMoving(GlobalShrimps, 0, roomOccupied);
             Console.WriteLine("Energy: {0, 9:0}", nMinimalEnergy);
             Console.WriteLine("Total time {0,8:0.000} Seconds", stopwatch.ElapsedMilliseconds / 1000.0);
             Console.WriteLine();
-
+            
+            
             //foreach(string s in BestQueue)
             //    Console.WriteLine(s);
         }
@@ -150,18 +152,9 @@ namespace MyApp
 
             return Res;
         }
-        private static bool IsOptimalMove(Shrimp S, Room REnd, Room RStart)
-        {
-            if(S.RoomId > 10 )
-            {
-
-            }
-
-            return true;
-        }
         private static int startMoving(List<Shrimp> Shrimps, int recEnergy, char[] rOc)
         {
-            //LastMovedShrimp = -1;
+
             if (nMinimalEnergy <= recEnergy + GetRestMinEnergy(Shrimps))
                 return 1;
 
@@ -169,145 +162,127 @@ namespace MyApp
             {
                 if (recEnergy < nMinimalEnergy)
                 {
+
                     nMinimalEnergy = recEnergy;
-                    BestQueue.Clear();
-                    foreach(string s in Queue)
-                        BestQueue.Add(s);
-                    
+                   
                 }
-                Queue.Clear();
-                //Console.WriteLine("Best Energy: {0,5:0}   - time {1,8:0.000} Seconds", recEnergy, stopwatch.ElapsedMilliseconds / 1000.0);
                 return recEnergy;
             }
-
-
 
             foreach (Shrimp S in Shrimps.Where(s=>s.ImHome == false)) // Skip Shrimp who is in the right place
             {
                 Room RStart = GlobalMap[S.RoomId];
-                int[] BestRoomOrder = new int[GlobalMap.Count];
-                int RoomCount;
+                int[] BestRoomOrder = GetBestRoomOrder(S);
 
-                if (GlobalMap.Count == 27)
-                    RoomCount = 11;
-                else
-                    RoomCount = 9;
-
-                if (S.Type == "D")
-                {
-                    BestRoomOrder[0] = 26;
-                    BestRoomOrder[1] = 22;
-                    BestRoomOrder[2] = 18;
-                    BestRoomOrder[3] = 14;
-                    BestRoomOrder[4] = 9;
-                    BestRoomOrder[5] = 7;
-                    BestRoomOrder[6] = -1;
-                    BestRoomOrder[7] = 5;
-                    BestRoomOrder[8] = 3;
-                    BestRoomOrder[9] = -1;
-                    BestRoomOrder[10] = -1;
-                }
-
-                if (S.Type == "C")
-                {
-                    BestRoomOrder[0] = 25;
-                    BestRoomOrder[1] = 21;
-                    BestRoomOrder[2] = 17;
-                    BestRoomOrder[3] = 13;
-                    BestRoomOrder[4] = 7;
-                    BestRoomOrder[5] = 5;
-                    BestRoomOrder[6] = 9;
-                    BestRoomOrder[7] = 3;
-                    BestRoomOrder[8] = -1;
-                    BestRoomOrder[9] = 1;
-                    BestRoomOrder[10] = 0;
-                    BestRoomOrder[10] = -1;
-                }
-
-                if (S.Type == "B")
-                {
-                    BestRoomOrder[0] = 24;
-                    BestRoomOrder[1] = 20;
-                    BestRoomOrder[2] = 16;
-                    BestRoomOrder[3] = 12;
-                    BestRoomOrder[4] = 3;
-                    BestRoomOrder[5] = 5;
-                    BestRoomOrder[6] = 1;
-                    BestRoomOrder[7] = 7;
-                    BestRoomOrder[8] = 0;
-                    BestRoomOrder[9] = 9;
-                    BestRoomOrder[10] = 10;
-                    BestRoomOrder[11] = -1;
-                }
-
-                if (S.Type == "A")
-                {
-                    BestRoomOrder[0] = 23;
-                    BestRoomOrder[1] = 19;
-                    BestRoomOrder[2] = 15;
-                    BestRoomOrder[3] = 11;
-                    BestRoomOrder[4] = 1;
-                    BestRoomOrder[5] = 3;
-                    BestRoomOrder[6] = 0;
-                    BestRoomOrder[7] = 5;
-                    BestRoomOrder[8] = 7;
-                    BestRoomOrder[9] = 9;
-                    BestRoomOrder[10] = 10;
-                    BestRoomOrder[11] = -1;
-                }
-
+                //BestRoomOrder[8] = -1;
 
                 //foreach (Room REnd in GlobalMap.Where(r=>r.Connections.Count !=3)) // Skip room right above the caves
-                for (int xx = 0; xx < RoomCount; xx++)
+                for (int xx = 0;  BestRoomOrder[xx] != -1; xx++)
                 {
-                   if (BestRoomOrder[xx] == -1 || BestRoomOrder[xx] >= GlobalMap.Count)
-                            continue;
+                    if (BestRoomOrder[xx] >= GlobalMap.Count)
+                        continue;
 
-                   Room REnd = GlobalMap[BestRoomOrder[xx]];
-                    //if (!IsOptimalMove(S, RStart, REnd))
-                    //    continue;
+                    Room REnd = GlobalMap[BestRoomOrder[xx]];
 
                     if (IsGoodToMove(S, REnd, RStart, rOc))
                     {
+                        int nMoveCost = RStart.Paths[REnd.Id].Count() * S.MoveCost;
+
                         List<Shrimp> ShrimpsTmp = new List<Shrimp>();
                         foreach (Shrimp SS in Shrimps)
                             ShrimpsTmp.Add((Shrimp)SS.Clone());
 
-                        char[] roomOccupiedTMP = new char[27];
-                        for(int i = 0; i < roomOccupiedTMP.Length; i++)
-                        roomOccupiedTMP[i] = rOc[i];
+                        //char[] roomOccupiedTMP = new char[27];
+                        //for(int i = 0; i < roomOccupiedTMP.Length; i++)
+                        //roomOccupiedTMP[i] = rOc[i];
 
                         Shrimp STmp = ShrimpsTmp[S.Id];
 
                         // Move Shrimp
-                        roomOccupiedTMP[STmp.RoomId] = '\0';
+                        char cPreviousShrimp = roomOccupied[S.RoomId];
+
+                        roomOccupied[S.RoomId] = '\0';
                         STmp.RoomId = REnd.Id;
-                        roomOccupiedTMP[STmp.RoomId] = STmp.Type[0];
+                        roomOccupied[STmp.RoomId] = STmp.Type[0];
 
                         if (REnd.OpenFor == STmp.Type)
                             STmp.ImHome = true;
 
-                        int nMoveCost = RStart.Paths[REnd.Id].Count() * S.MoveCost;
-                        string sMove = S.Type+S.Id+ "   "+ RStart.Id + " -> "+REnd.Id;
-                        Queue.Add(sMove);
+                        LastMovedShrimp = STmp.Id;
                         // Move End
 
                         if (nMinimalEnergy > recEnergy + nMoveCost +GetRestMinEnergy(ShrimpsTmp))
                         {
-                            startMoving(ShrimpsTmp, recEnergy + nMoveCost, roomOccupiedTMP);
+                            startMoving(ShrimpsTmp, recEnergy + nMoveCost, roomOccupied);
                         }
+                        //else
+                        {
+                            roomOccupied[S.RoomId] = cPreviousShrimp;
+                            roomOccupied[STmp.RoomId] = '\0';
+                        }
+
+
                     }
                 }
 
             }
-            Queue.Clear();
+
+            //LastMovedShrimp = -1;
             return 1;
         }
 
+        private static int[] GetBestRoomOrder(Shrimp S)
+        {
+            int[] BestRoomOrder = new int[20];
+            if (S.Type == "D")
+            {
+                if (S.RoomId % 4 == 3)
+                    BestRoomOrder = new int[] { 26, 22, 18, 14, 7, 5, 3, 9, 1, -1, 10, 0, -1 };
 
+                if (S.RoomId % 4 == 0)
+                    BestRoomOrder = new int[] { 26, 22, 18, 14, 5, 7, 9, 10, 3, -1, 1, 0, -1 };
+
+                if (S.RoomId % 4 == 1)
+                    BestRoomOrder = new int[] { 26, 22, 18, 14, 7, 9, 10, 5, 3, -1, 1, 0, -1 };
+
+                if (S.RoomId % 4 == 2)
+                    BestRoomOrder = new int[] { 26, 22, 18, 14, 9, 7, 10, 5, -1, 3, 0, -1, -1 };
+
+
+            }
+
+            if (S.Type == "C")
+            {
+                if (S.RoomId % 4 == 3)
+                    BestRoomOrder = new int[] { 25, 21, 17, 13, 3, 5, 7, 9, 10, 1, -1, 0, -1 };
+
+                if (S.RoomId % 4 == 0)
+                    BestRoomOrder = new int[] { 25, 21, 17, 13, 5, 7, 9, 10, 3, 1, -1, 0, -1 };
+
+                if (S.RoomId % 4 == 1)
+                    BestRoomOrder = new int[] { 25, 21, 17, 13, 5, 7, 3, 9, 1, -1, 10, 0, -1 };
+
+                if (S.RoomId % 4 == 2)
+                    BestRoomOrder = new int[] { 25, 21, 17, 13, 7, 5, 9, 10, 3, 1, -1, 0, -1 };
+
+
+            }
+
+            if (S.Type == "B")
+                BestRoomOrder = new int[] { 24, 20, 16, 12, 7, 5, 3, 9, 10, 1, 0, -1, -1 };
+
+            if (S.Type == "A")
+                BestRoomOrder = new int[] { 23, 19, 15, 11, 7, 5, 3, 9, 10, 1, 0, -1, -1 };
+
+
+            return BestRoomOrder;
+        }
 
         private static bool IsGoodToMove(Shrimp S, Room REnd, Room RStart, char[] roomOccupied)
         {
+            if (S.Id == LastMovedShrimp)
+                return false;
+
             if (S.RoomId == REnd.Id) // Skip where Start == End 
                 return false;
 
@@ -391,6 +366,16 @@ namespace MyApp
 
             foreach (Shrimp shrimp in GlobalShrimps)
                 shrimp.ImHome = shrimp.IsItRightDestination(GlobalMap.Count, GlobalMap[shrimp.RoomId], roomOccupied);
+
+
+            //GlobalShrimps = GlobalShrimps.OrderBy(s=>s.RoomId).ToList();
+            //GlobalShrimps.Reverse();
+            //int id = 0;
+            
+            //foreach(Shrimp S in GlobalShrimps)
+            //    S.Id = id++;
+
+
 
             foreach (Room RStart in GlobalMap)
                 foreach (Room REnd in GlobalMap)
