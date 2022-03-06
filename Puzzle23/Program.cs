@@ -73,6 +73,7 @@ namespace MyApp
 
         static List<Room> GlobalMap = new List<Room>();
         static List<Shrimp> GlobalShrimps = new List<Shrimp>();
+        static Dictionary<string, int> Cache = new Dictionary<string, int>();
         //static List<string> Queue = new List<string>();
         //static List<string> BestQueue = new List<string>();
         static char[] roomOccupied = new char[27];
@@ -162,11 +163,12 @@ namespace MyApp
 
             if (isCorrectOrder(Shrimps))
             {
+                LastMovedShrimp = -1;
                 if (recEnergy < nMinimalEnergy)
                 {
-
                     nMinimalEnergy = recEnergy;
-                   
+                    //Console.WriteLine("Best Energy: {0,5:0}   - time {1,8:0.000} Seconds", recEnergy, stopwatch.ElapsedMilliseconds / 1000.0);
+
                 }
                 return recEnergy;
             }
@@ -175,8 +177,6 @@ namespace MyApp
             {
                 Room RStart = GlobalMap[S.RoomId];
                 int[] BestRoomOrder = GetBestRoomOrder(S);
-
-                //BestRoomOrder[8] = -1;
 
                 //foreach (Room REnd in GlobalMap.Where(r=>r.Connections.Count !=3)) // Skip room right above the caves
                 for (int xx = 0;  BestRoomOrder[xx] != -1; xx++)
@@ -192,11 +192,14 @@ namespace MyApp
 
                         char cPreviousShrimp = roomOccupied[S.RoomId];
                         int nOldRoomId = S.RoomId;
+                        int nOldLastMovedS = LastMovedShrimp;
                         bool bOldHome = S.ImHome;
 
                         roomOccupied[S.RoomId] = '\0';
                         S.RoomId = REnd.Id;
                         roomOccupied[S.RoomId] = S.Type[0];
+                        LastMovedShrimp = S.Id;
+
 
                         if (REnd.OpenFor == S.Type)
                             S.ImHome = true;
@@ -206,14 +209,17 @@ namespace MyApp
 
                         if (nMinimalEnergy > recEnergy + nMoveCost + GetRestMinEnergy(Shrimps))
                         {
-                            LastMovedShrimp = S.Id;
-                            startMoving(Shrimps, recEnergy + nMoveCost, roomOccupied);
-                            LastMovedShrimp = -1;
-                        }
+                            int res = startMoving(Shrimps, recEnergy + nMoveCost, roomOccupied);
+                            string sKey = "";
+                            
+                            foreach (char c in roomOccupied)
+                                sKey += c;
 
+                            Cache.TryAdd(sKey, res);
+                        }
                         //else
                         {
-
+                            LastMovedShrimp = nOldLastMovedS;
                             roomOccupied[S.RoomId] = '\0';
                             S.RoomId = nOldRoomId;
                             S.ImHome = bOldHome;
@@ -236,16 +242,16 @@ namespace MyApp
             if (S.Type == "D")
             {
                 if (S.RoomId % 4 == 3)
-                    BestRoomOrder = new int[] { 26, 22, 18, 14, 7, 5, 3, 9, 1, 10, 1, 0, -1 };
+                    BestRoomOrder = new int[] { 26, 22, 18, 14, 7, 5, 3, 9, 10, 1, 0, -1 };
 
                 if (S.RoomId % 4 == 0)
-                    BestRoomOrder = new int[] { 26, 22, 18, 14, 5, 7, 9, 10, 3, 1, 1, 0, -1 };
+                    BestRoomOrder = new int[] { 26, 22, 18, 14, 5, 7, 9, 10, 3, 1, 0, -1 };
 
                 if (S.RoomId % 4 == 1)
-                    BestRoomOrder = new int[] { 26, 22, 18, 14, 7, 9, 10, 5, 3, 1, 1, 0, -1 };
+                    BestRoomOrder = new int[] { 26, 22, 18, 14, 7, 9, 10, 5, 3, 1, 0, -1 };
 
                 if (S.RoomId % 4 == 2)
-                    BestRoomOrder = new int[] { 26, 22, 18, 14, 9, 7, 10, 5, 3, 0, 1, -1 };
+                    BestRoomOrder = new int[] { 26, 22, 18, 14, 9, 7, 10, 5, 3, 1, 0, -1 };
 
 
             }
@@ -268,10 +274,10 @@ namespace MyApp
             }
 
             if (S.Type == "B")
-                BestRoomOrder = new int[] { 24, 20, 16, 12, 7, 5, 3, 9, 10, 1, 0, -1, -1 };
+                BestRoomOrder = new int[] { 24, 20, 16, 12, 7, 5, 3, 9, 10, 1, 0, -1 };
 
             if (S.Type == "A")
-                BestRoomOrder = new int[] { 23, 19, 15, 11, 7, 5, 3, 9, 10, 1, 0, -1, -1 };
+                BestRoomOrder = new int[] { 23, 19, 15, 11, 7, 5, 3, 9, 10, 1, 0, -1 };
 
 
             return BestRoomOrder;
@@ -279,6 +285,9 @@ namespace MyApp
 
         private static bool IsGoodToMove(Shrimp S, Room REnd, Room RStart, char[] roomOccupied)
         {
+            //if (RStart.OpenFor == "ABCD" && REnd.OpenFor == "ABCD")
+            //    return false;
+
             if (S.Id == LastMovedShrimp)
                 return false;
 
