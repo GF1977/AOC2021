@@ -83,19 +83,20 @@ namespace MyApp
         {
             stopwatch = new Stopwatch();
             //stopwatch.Start();
-            SolveTheProblem(@".\..\..\..\Data_s.txt");
+            //SolveTheProblem(@".\..\..\..\Data_s.txt");
             SolveTheProblem(@".\..\..\..\Data_t.txt");
-            SolveTheProblem(@".\..\..\..\Data_pIO.txt");
-            SolveTheProblem(@".\..\..\..\Data_p.txt");
+            //SolveTheProblem(@".\..\..\..\Data_pIO.txt");
+            //SolveTheProblem(@".\..\..\..\Data_p.txt");
 
-            SolveTheProblem(@".\..\..\..\Data_s2.txt");
+            //SolveTheProblem(@".\..\..\..\Data_s2.txt");
             SolveTheProblem(@".\..\..\..\Data_t2.txt");
-            SolveTheProblem(@".\..\..\..\Data_pIO2.txt");
+            //SolveTheProblem(@".\..\..\..\Data_pIO2.txt");
             SolveTheProblem(@".\..\..\..\Data_p2.txt");
         }
 
         private static void SolveTheProblem(string filepath)
         {
+            Cache.Clear();
             stopwatch.Reset();
             stopwatch.Start();
             Console.WriteLine("Calculation started: {0}", filepath);
@@ -156,14 +157,14 @@ namespace MyApp
         private static int startMoving(List<Shrimp> Shrimps, int recEnergy, char[] rOc)
         {
             //if (rOc[11] != '\0' && rOc[12] != '\0' && rOc[13] != '\0' && rOc[14] != '\0')
-            //    LastMovedShrimp = -1;
+            //LastMovedShrimp = -1;
 
             if (nMinimalEnergy <= recEnergy + GetRestMinEnergy(Shrimps))
                 return 1;
 
             if (isCorrectOrder(Shrimps))
             {
-                LastMovedShrimp = -1;
+                //LastMovedShrimp = -1;
                 if (recEnergy < nMinimalEnergy)
                 {
                     nMinimalEnergy = recEnergy;
@@ -206,16 +207,16 @@ namespace MyApp
 
 
                         // Move End
+                        string sKey = GetKey(roomOccupied);
 
-                        if (nMinimalEnergy > recEnergy + nMoveCost + GetRestMinEnergy(Shrimps))
+
+                        if(!Cache.ContainsKey(sKey))
+                        //if (nMinimalEnergy > recEnergy + nMoveCost + GetRestMinEnergy(Shrimps))
                         {
                             int res = startMoving(Shrimps, recEnergy + nMoveCost, roomOccupied);
-                            string sKey = "";
-                            
-                            foreach (char c in roomOccupied)
-                                sKey += c;
 
-                            Cache.TryAdd(sKey, res);
+                            if(res == 1)
+                                Cache.TryAdd(sKey, res);
                         }
                         //else
                         {
@@ -234,6 +235,20 @@ namespace MyApp
 
             //LastMovedShrimp = -1;
             return 1;
+        }
+
+        private static string GetKey(char[] roomOccupied)
+        {
+            string sKey = "";
+            foreach (char c in roomOccupied)
+            {
+                if (c == '\0')
+                    sKey += "-";
+                else
+                    sKey += c;
+            }
+
+            return sKey;
         }
 
         private static int[] GetBestRoomOrder(Shrimp S)
