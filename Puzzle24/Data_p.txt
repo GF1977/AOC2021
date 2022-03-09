@@ -1,0 +1,9 @@
+﻿inp z
+inp y
+add z y
+inp x
+mul z x
+inp w
+add z w
+inp x
+mul z x
