@@ -2,7 +2,7 @@
 {
     public class Program
     {
-        // Answers for Data_p.txt  Part 1:      Part 2: 
+        // Answers for Data_p.txt  Part 1:  29991993698469    Part 2: 
         static readonly string filePath = @".\..\..\..\Data_t.txt";
         static List<string[]> InputData = new List<string[]>();
         static long[] wxyz = {0,0,0,0};
@@ -10,34 +10,88 @@
         public static void Main(string[] args)
         {
             ParsingInputData();
-            string sIV = "??891?93?0??7?";
-            long Inputvariable = 99891993909979;
+            // 91091993909179 => 470
+            //string sIV = "9999?99?9?????";
+            string sIV = "?999?99??9????";
+            if (sIV.Length != 14)
+                return;
+            long Inputvariable = 99999999999999;
             long resOne = 1;
-            long X = 3999999;
+            int nQuestionMark = sIV.Count(s => s.Equals('?'));
+            long X = (long)Math.Pow(10, nQuestionMark) - 1;
+            long Xlimit = (X + 1) / 10;
             long minRes = long.MaxValue;
-            while(resOne !=0)
-            //for(int i = 0; i <10; i++)
+
+            (int A, int B, int C)[] ABCV = {(1,15,9), (1,11,1), (1,10,11), (1,12,3), (26,-11,10), (1,11,5), (1,14,0), (26,-6,7), (1,10,9), (26,-6,15), (26,-6,4), (26,-16,10), (26,-4,4), (26,-2,9) };
+
+            foreach (var XX in ABCV)
+            {
+                ProcessEasy(Inputvariable, XX.A, XX.B, XX.C);
+                Console.WriteLine("Part one: {0, 10:0}", wxyz[3]);
+            }
+
+           // return;
+            while (resOne !=0 && X >= Xlimit)
             {
                 Inputvariable = GetModelNumber(sIV, X);
-
-                variableIndex = 0;
-                wxyz[0] = wxyz[1] = wxyz[2] = wxyz[3] = 0;
-                
-                //Inputvariable -= (1000000000000);
-                resOne = ProcessCommands(Inputvariable);
-                //Console.WriteLine("Part one: {0, 10:0}", resOne);
-                if (resOne < minRes)
+                if (Inputvariable != -1)
                 {
-                    Console.WriteLine("Inputvariable = {0}       Res = {1}", Inputvariable, resOne);
-                    minRes = resOne;
-                }
 
+
+                    variableIndex = 0;
+                    wxyz[0] = wxyz[1] = wxyz[2] = wxyz[3] = 0;
+
+                    //Inputvariable -= (1000000000000);
+                    //resOne = ProcessCommands(Inputvariable);
+
+
+                    foreach (var XX in ABCV)
+                    {
+                        ProcessEasy(Inputvariable, XX.A, XX.B, XX.C);
+                        //Console.WriteLine("Part one: {0, 10:0}", wxyz[3]);
+                    }
+                    resOne = wxyz[3];
+                    //Console.WriteLine("Part one: {0, 10:0}", resOne);
+                    if (resOne < minRes)
+                    {
+                        Console.WriteLine("Inputvariable = {0}       Res = {1}", Inputvariable, resOne);
+                        minRes = resOne;
+                    }
+                    //Inputvariable--;
+                }
                 X--;
 
             }
 
-            Console.WriteLine("Part one: {0, 10:0}", Inputvariable);
+            Console.WriteLine("Part one: {0, 10:0}", minRes);
         }
+
+        private static void ProcessEasy(long sIV, int A, int B, int C)
+        {
+            int value = ReadNextVariable(sIV);
+
+            long w = wxyz[0];
+            long x = wxyz[1];
+            long y = wxyz[2];
+            long z = wxyz[3];
+
+            w = value;
+            if (z % 26 + B == w)
+                x = 0;
+            else
+                x = 1;
+
+            z /= A;
+
+            z *= 25 * x + 1;
+            y = (w + C) * x;
+            z+= y;
+
+            wxyz[0] = w;
+            wxyz[1] = x;
+            wxyz[2] = y;
+            wxyz[3] = z;
+         }
 
         private static long GetModelNumber(string sIV, long X)
         {
@@ -48,7 +102,12 @@
             {
                 if (c == '?')
                 {
-                    s += X.ToString()[Xindex];
+                    char newC = X.ToString()[Xindex];
+                    if (newC == '0')
+                    {
+                        return -1;
+                    }
+                    s += newC;
                     Xindex++;
                 }
                 else
@@ -142,10 +201,10 @@
             if (res >=0)
                 return wxyz[res];
             else
-                return long.Parse(Unit); 
+                return long.Parse(Unit);
 
         }
-
+        
         private static int ReadNextVariable(long Inputvariable)
         {
             string sVariable = Inputvariable.ToString();

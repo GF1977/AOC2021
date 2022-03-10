@@ -1,9 +1,11 @@
-﻿inp z
-inp y
-add z y
-inp x
-mul z x
-inp w
+﻿inp w
 add z w
-inp x
-mul z x
+mod z 2
+div w 2
+add y w
+mod y 2
+div w 2
+add x w
+mod x 2
+div w 2
+mod w 2
