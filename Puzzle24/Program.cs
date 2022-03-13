@@ -2,101 +2,131 @@
 {
     public class Program
     {
-        // Answers for Data_p.txt  Part 1:  29991993698469    Part 2: 
-        static readonly string filePath = @".\..\..\..\Data_t.txt";
+        // Answers for Data_p.txt  Part 1:  29991993698469    Part 2: 14691271141118 - not minimal
+        static readonly string filePath = @".\..\..\..\Data_p.txt";
         static List<string[]> InputData = new List<string[]>();
+        static Dictionary<int,char> Options = new Dictionary<int, char>();
         static long[] wxyz = {0,0,0,0};
         static int variableIndex = 0;
         public static void Main(string[] args)
         {
+            
             ParsingInputData();
-            // 91091993909179 => 470
-            //string sIV = "9999?99?9?????";
-            string sIV = "?999?99??9????";
+            string sIV = "";
+            int n = 0;
+            while (n <= 14 )
+            {
+                n = GetNextPair(n, out sIV);
+
+                string sIVtmp = "";
+                for(int i = 0; i < sIV.Length; i++)
+                {
+                    if(Options.ContainsKey(i))
+                        sIVtmp += Options[i];
+                    else
+                        sIVtmp += sIV[i];
+                }
+
+               // sIVtmp = "999999????9999";
+                sIV = sIVtmp;
+                SolveThePuzzle(sIV);
+                Options = Options.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
+                
+            }
+
+
+            string sIVtmp2 = "";
+            for (int i = 0; i < sIV.Length; i++)
+            {
+                if (Options.ContainsKey(i))
+                    sIVtmp2 += Options[i];
+                else
+                    sIVtmp2 += "?";
+            }
+
+           // sIVtmp2 = "????8996394???";
+
+            Console.WriteLine(sIVtmp2);
+
+            long minRes = SolveThePuzzle(sIVtmp2);
+
+            // return;
+
+            //string sIV = "1469???????118";
+            //string sIV = "2999??????8469";
+            //string sIV = "999??999999999";
+
+
+            Console.WriteLine("Part one: {0, 10:0}", minRes);
+        }
+
+        private static int GetNextPair(int n, out string s)
+        {
+            s = "";
+            s = s.PadRight(n, '9');
+            // 5 is the fifth command "add x N", we need to cappture N (v[2])
+            for (int i = n*18 + 5; i < InputData.Count - 18; i += 18)
+            {
+                string[] v = InputData[i];
+                if (v[0] == "add" && v[1] == "x")
+                {
+                    if (int.Parse(v[2]) < 0)
+                    {
+                        s = s.Substring(0, s.Length - 1) + "??";
+                    }
+                    else
+                    {
+                        if (s.Contains("??"))
+                            break;
+
+                        s += "9";
+                    }
+                }
+                n++;
+
+            }
+            s = s.PadRight(14, '9');
+            return n+1;
+        }
+
+        private static long  SolveThePuzzle(string sIV)
+        {
             if (sIV.Length != 14)
-                return;
-            long Inputvariable = 99999999999999;
+                return -1;
+
+            long Inputvariable;
             long resOne = 1;
             int nQuestionMark = sIV.Count(s => s.Equals('?'));
             long X = (long)Math.Pow(10, nQuestionMark) - 1;
             long Xlimit = (X + 1) / 10;
             long minRes = long.MaxValue;
-
-            (int A, int B, int C)[] ABCV = {(1,15,9), (1,11,1), (1,10,11), (1,12,3), (26,-11,10), (1,11,5), (1,14,0), (26,-6,7), (1,10,9), (26,-6,15), (26,-6,4), (26,-16,10), (26,-4,4), (26,-2,9) };
-
-            foreach (var XX in ABCV)
-            {
-                ProcessEasy(Inputvariable, XX.A, XX.B, XX.C);
-                Console.WriteLine("Part one: {0, 10:0}", wxyz[3]);
-            }
-
-           // return;
-            while (resOne !=0 && X >= Xlimit)
+            //X = 1111111;
+            while (resOne != 0 && X >= Xlimit)
+            //while (resOne != 0 && X <= 9999999)
             {
                 Inputvariable = GetModelNumber(sIV, X);
                 if (Inputvariable != -1)
                 {
-
-
                     variableIndex = 0;
                     wxyz[0] = wxyz[1] = wxyz[2] = wxyz[3] = 0;
 
-                    //Inputvariable -= (1000000000000);
-                    //resOne = ProcessCommands(Inputvariable);
-
-
-                    foreach (var XX in ABCV)
-                    {
-                        ProcessEasy(Inputvariable, XX.A, XX.B, XX.C);
-                        //Console.WriteLine("Part one: {0, 10:0}", wxyz[3]);
-                    }
-                    resOne = wxyz[3];
-                    //Console.WriteLine("Part one: {0, 10:0}", resOne);
-                    if (resOne < minRes)
+                    resOne = ProcessCommands(Inputvariable, sIV.Count(s=>s =='?'));
+                    if (resOne == 0)
                     {
                         Console.WriteLine("Inputvariable = {0}       Res = {1}", Inputvariable, resOne);
                         minRes = resOne;
                     }
-                    //Inputvariable--;
                 }
                 X--;
-
+                //X++;
             }
 
-            Console.WriteLine("Part one: {0, 10:0}", minRes);
+            return minRes;
         }
-
-        private static void ProcessEasy(long sIV, int A, int B, int C)
-        {
-            int value = ReadNextVariable(sIV);
-
-            long w = wxyz[0];
-            long x = wxyz[1];
-            long y = wxyz[2];
-            long z = wxyz[3];
-
-            w = value;
-            if (z % 26 + B == w)
-                x = 0;
-            else
-                x = 1;
-
-            z /= A;
-
-            z *= 25 * x + 1;
-            y = (w + C) * x;
-            z+= y;
-
-            wxyz[0] = w;
-            wxyz[1] = x;
-            wxyz[2] = y;
-            wxyz[3] = z;
-         }
 
         private static long GetModelNumber(string sIV, long X)
         {
             int Xindex = 0;
-
             string s = "";
             foreach(char c in sIV)
             {
@@ -113,76 +143,102 @@
                 else
                     s += c;
             }
-
             return long.Parse(s);
         }
 
-        private static long ProcessCommands(long Inputvariable)
+        private static long ProcessCommands(long Inputvariable, int nQuestionMarks)
         {
-            int res = 0;
+            Dictionary<int, char> OptionsTMP = new Dictionary<int, char>();
+            bool isX0 = true;
+            int cntX = 0;
+            int cntMax = 0;
 
+            int a = 0;
+            long tmp = 0;
             foreach (string[] cmd in InputData)
             {
-               // Console.WriteLine();
                 switch (cmd[0])
                 {
                     case "inp":
                         {
+                            //if (a == 3)
+                            //    tmp = wxyz[3];
+
+                            //if ((a == 5 || a == 11) && tmp != wxyz[3])
+                            //    return long.MaxValue;
+
+                            //a++;
+
                             int value = ReadNextVariable(Inputvariable);
                             wxyz[GetAddress(cmd[1])] = value;
-                            //Console.WriteLine("{0} {1} = {2}", cmd[0], cmd[1], value);
                             break;
                         }
                     
                     case "add":
                         {
                             long argumentB = GetUnitNumber(cmd[2]);
-                           // Console.WriteLine("{0} {1} = {2}      {3} = {4}", cmd[0], cmd[1], wxyz[GetAddress(cmd[1])], cmd[2], argumentB);
                             wxyz[GetAddress(cmd[1])] += argumentB;
-                           // Console.WriteLine("{0} {1} = {2}      {3} = {4}", cmd[0], cmd[1], wxyz[GetAddress(cmd[1])], cmd[2], argumentB);
                             break;
                         }
                     case "mul":
                         {
                             long argumentB = GetUnitNumber(cmd[2]);
-                           // Console.WriteLine("{0} {1} = {2}      {3} = {4}", cmd[0], cmd[1], wxyz[GetAddress(cmd[1])], cmd[2], argumentB);
                             wxyz[GetAddress(cmd[1])] *= argumentB;
-                           // Console.WriteLine("{0} {1} = {2}      {3} = {4}", cmd[0], cmd[1], wxyz[GetAddress(cmd[1])], cmd[2], argumentB);
                             break;
                         }
                     case "div":
                         {
                             long argumentB = GetUnitNumber(cmd[2]);
-                          //  Console.WriteLine("{0} {1} = {2}      {3} = {4}", cmd[0], cmd[1], wxyz[GetAddress(cmd[1])], cmd[2], argumentB);
                             wxyz[GetAddress(cmd[1])] /= argumentB;
-                           // Console.WriteLine("{0} {1} = {2}      {3} = {4}", cmd[0], cmd[1], wxyz[GetAddress(cmd[1])], cmd[2], argumentB);
                             break;
                         }
                     case "mod":
                         {
                             long argumentB = GetUnitNumber(cmd[2]);
-                          // Console.WriteLine("{0} {1} = {2}      {3} = {4}", cmd[0], cmd[1], wxyz[GetAddress(cmd[1])], cmd[2], argumentB);
                             wxyz[GetAddress(cmd[1])] %= argumentB;
-                          //  Console.WriteLine("{0} {1} = {2}      {3} = {4}", cmd[0], cmd[1], wxyz[GetAddress(cmd[1])], cmd[2], argumentB);
                             break;
                         }
                     case "eql":
                         {
                             long argumentB = GetUnitNumber(cmd[2]);
-                         //   Console.WriteLine("{0} {1} = {2}      {3} = {4}", cmd[0], cmd[1], wxyz[GetAddress(cmd[1])], cmd[2], argumentB);
                             wxyz[GetAddress(cmd[1])] = (wxyz[GetAddress(cmd[1])] == argumentB) ?  1:0;
-                           // Console.WriteLine("{0} {1} = {2}      {3} = {4}", cmd[0], cmd[1], wxyz[GetAddress(cmd[1])], cmd[2], argumentB);
+
+
+                            if (cmd[2] == "0")
+                            {
+                                if (wxyz[1] == 0)
+                                {
+                                    OptionsTMP.TryAdd(variableIndex - 1, Inputvariable.ToString()[variableIndex - 1]);
+                                    OptionsTMP.TryAdd(variableIndex - 2, Inputvariable.ToString()[variableIndex - 2]);
+                                    cntX++;
+                                    //Console.WriteLine("Index = {0}     sIV[{1}] = {2}  sIV[{3}] = {4}", variableIndex, variableIndex - 2, Inputvariable.ToString()[variableIndex - 2], variableIndex - 1, Inputvariable.ToString()[variableIndex - 1]);
+                                }
+                                else
+                                {
+                                    if (cntX > cntMax)
+                                        cntMax = cntX;
+
+                                    cntX = 0;
+                                }
+                            }
+
                             break;
                         }
                 }
             }
 
-
+            //if (Options.Count + OptionsTMP.Count >= nQuestionMarks -1   && OptionsTMP.Count > 0)
+            if (cntMax >= nQuestionMarks - 1 && OptionsTMP.Count > Options.Count) 
+            {
+                Options.Clear();
+                foreach (var kvp in OptionsTMP)
+                    Options.TryAdd(kvp.Key, kvp.Value);
+                return -1;
+            }
 
 
             return wxyz[3];
         }
-
         private static long GetAddress(string Unit)
         {
             switch (Unit)
@@ -194,7 +250,6 @@
                     default: return -1;
             }
         }
-
         private static long GetUnitNumber(string Unit)
         {
             long res = GetAddress(Unit);
@@ -204,7 +259,6 @@
                 return long.Parse(Unit);
 
         }
-        
         private static int ReadNextVariable(long Inputvariable)
         {
             string sVariable = Inputvariable.ToString();
@@ -218,7 +272,6 @@
 
             throw new Exception();
         }
-
         private static void ParsingInputData()
         {
             using (StreamReader file = new(filePath))
