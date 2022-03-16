@@ -2,10 +2,12 @@
 {
     public class Program
     {
-        // Answers for Data_p.txt  Part 1:  29991993698469    Part 2: 14691271141118 - not minimal
-        static readonly string filePath = @".\..\..\..\Data_p.txt";
+        // Answers for Data_p.txt   Part 1: 29991993698469      Part 2: 14691271141118
+        // pIO                      Part 1: 96918996924991      Part 2:
+        static readonly string filePath = @".\..\..\..\Data_pIO.txt";
         static List<string[]> InputData = new List<string[]>();
         static Dictionary<int,char> Options = new Dictionary<int, char>();
+        static List<(int A, int B, int C)> Koeff = new List<(int A, int B, int C)>();
         static long[] wxyz = {0,0,0,0};
         static int variableIndex = 0;
         public static void Main(string[] args)
@@ -14,37 +16,47 @@
             ParsingInputData();
             string sIV = "";
             int n = 0;
-            while (n <= 14 )
-            {
-                n = GetNextPair(n, out sIV);
+            int nCount = 0;
 
-                string sIVtmp = "";
-                for(int i = 0; i < sIV.Length; i++)
-                {
-                    if(Options.ContainsKey(i))
-                        sIVtmp += Options[i];
-                    else
-                        sIVtmp += sIV[i];
-                }
+            //while (n <= 14)
+            //{
+            //    n = GetNextPair(n, out sIV);
 
-               // sIVtmp = "999999????9999";
-                sIV = sIVtmp;
-                SolveThePuzzle(sIV);
-                Options = Options.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
-                
-            }
+            //    string sIVtmp = "";
+
+            //    if (Options.Count > 0)
+            //    {
+            //        for (int i = 0; i < sIV.Length; i++)
+            //        {
+            //            if (Options.ContainsKey(i))
+            //                sIVtmp += Options[i];
+            //            else
+            //                sIVtmp += sIV[i];
+            //        }
+            //        // sIVtmp = "999999????9999";
+            //        sIV = sIVtmp;
+            //    }
+            //    nCount += sIV.Count(c => c == '?');
+
+            //    SolveThePuzzle(sIV);
+            //    Options = Options.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
+
+            //}
 
 
             string sIVtmp2 = "";
-            for (int i = 0; i < sIV.Length; i++)
-            {
-                if (Options.ContainsKey(i))
-                    sIVtmp2 += Options[i];
-                else
-                    sIVtmp2 += "?";
-            }
+            //for (int i = 0; i < sIV.Length; i++)
+            //{
+            //    if (Options.ContainsKey(i))
+            //        sIVtmp2 += Options[i];
+            //    else
+            //        sIVtmp2 += "?";
+            //}
 
-           // sIVtmp2 = "????8996394???";
+              sIVtmp2 = "?????????99999";
+            //sIVtmp2 = "9999899639????";
+            //sIVtmp2 = "????8996394981";
+            sIVtmp2 = "??????????4991";
 
             Console.WriteLine(sIVtmp2);
 
@@ -111,7 +123,8 @@
                     wxyz[0] = wxyz[1] = wxyz[2] = wxyz[3] = 0;
 
                     resOne = ProcessCommands(Inputvariable, sIV.Count(s=>s =='?'));
-                    if (resOne == 0)
+                    if(resOne < minRes && resOne >= 0)
+                    //if (resOne == 0)
                     {
                         Console.WriteLine("Inputvariable = {0}       Res = {1}", Inputvariable, resOne);
                         minRes = resOne;
@@ -153,23 +166,39 @@
             int cntX = 0;
             int cntMax = 0;
 
-            int a = 0;
-            long tmp = 0;
+            int nInstructionN = 0;
+
+            foreach (var X in Koeff)
+            {
+                long x = 1;
+                long w = ReadNextVariable(Inputvariable);
+                long z = wxyz[3] / X.A;
+                if ((wxyz[3] % 26 + X.B) != w)
+                {
+                    z = z * 26 + w + X.C;
+                }
+
+                
+                
+                //z =+ x * (w + X.C);
+
+                wxyz[3] = z;
+            }
+
+            return wxyz[3];
+
+
             foreach (string[] cmd in InputData)
             {
+                nInstructionN++;
                 switch (cmd[0])
                 {
                     case "inp":
                         {
-                            //if (a == 3)
-                            //    tmp = wxyz[3];
 
-                            //if ((a == 5 || a == 11) && tmp != wxyz[3])
-                            //    return long.MaxValue;
-
-                            //a++;
 
                             int value = ReadNextVariable(Inputvariable);
+
                             wxyz[GetAddress(cmd[1])] = value;
                             break;
                         }
@@ -225,6 +254,13 @@
                             break;
                         }
                 }
+
+
+                if (wxyz[3] == 0 && nInstructionN % 18 == 0 && variableIndex > 6)
+                {
+                    Console.WriteLine("InputVariable:  {0}    Offset: {1}", Inputvariable.ToString().Substring(0,variableIndex), variableIndex);
+                    //return 0;
+                }
             }
 
             //if (Options.Count + OptionsTMP.Count >= nQuestionMarks -1   && OptionsTMP.Count > 0)
@@ -233,7 +269,7 @@
                 Options.Clear();
                 foreach (var kvp in OptionsTMP)
                     Options.TryAdd(kvp.Key, kvp.Value);
-                return -1;
+                return long.MaxValue;
             }
 
 
@@ -261,16 +297,29 @@
         }
         private static int ReadNextVariable(long Inputvariable)
         {
+
+            variableIndex++;
+            //switch (variableIndex)
+            //{
+
+            //    case 1: return -Koeff[variableIndex-1].C;
+            //    case 2: return -Koeff[variableIndex-1].C;
+            //    case 3: return -Koeff[variableIndex-1].C;
+
+            //}
+
+
+
             string sVariable = Inputvariable.ToString();
             int nRes = 0;
-            bool bParsingResult = int.TryParse(sVariable[variableIndex].ToString(), out nRes);
-            if(bParsingResult)
+            bool bParsingResult = int.TryParse(sVariable[variableIndex-1].ToString(), out nRes);
+            //if(bParsingResult)
             {
-                variableIndex++;
+                //variableIndex++;
                 return nRes;
             }
 
-            throw new Exception();
+            //throw new Exception();
         }
         private static void ParsingInputData()
         {
@@ -283,6 +332,29 @@
                     foreach (string s in parts)
                         InputData.Add(s.Split(" "));
                 }
+
+            (int A, int B, int C) KoeffTMP = (0,0,0);
+
+            int n = 0;
+            foreach(string[] s in InputData)
+            {
+                if (n == 4)
+                    KoeffTMP.A = int.Parse(s[2]);
+
+                if (n == 5)
+                    KoeffTMP.B = int.Parse(s[2]);
+
+                if (n == 15)
+                    KoeffTMP.C = int.Parse(s[2]);
+
+                n++;
+
+                if (n == 18)
+                {
+                    n = 0;
+                    Koeff.Add(KoeffTMP);
+                }
+            }
         }
     }
 }
