@@ -4,12 +4,13 @@
     {
         // Answers for Data_p.txt   Part 1: 29991993698469      Part 2: 14691271141118
         // pIO                      Part 1: 96918996924991      Part 2:
-        static readonly string filePath = @".\..\..\..\Data_pIO.txt";
+        static readonly string filePath = @".\..\..\..\Data_p.txt";
         static List<string[]> InputData = new List<string[]>();
         static Dictionary<int,char> Options = new Dictionary<int, char>();
         static List<(int A, int B, int C)> Koeff = new List<(int A, int B, int C)>();
         static long[] wxyz = {0,0,0,0};
         static int variableIndex = 0;
+        static bool bFinalRound = false;
         public static void Main(string[] args)
         {
             
@@ -53,23 +54,18 @@
             //        sIVtmp2 += "?";
             //}
 
-              sIVtmp2 = "?????????99999";
-            //sIVtmp2 = "9999899639????";
-            //sIVtmp2 = "????8996394981";
-            sIVtmp2 = "??????????4991";
+            sIVtmp2 = "999????????999";
+            Console.WriteLine("--- {0}", sIVtmp2);
 
-            Console.WriteLine(sIVtmp2);
+            long nIV = SolveThePuzzle(sIVtmp2);
 
-            long minRes = SolveThePuzzle(sIVtmp2);
-
-            // return;
-
-            //string sIV = "1469???????118";
-            //string sIV = "2999??????8469";
-            //string sIV = "999??999999999";
+            sIVtmp2 = "???" + nIV.ToString().Substring(3, 8) + "???";
+           
+            bFinalRound = true;
+                 nIV = SolveThePuzzle(sIVtmp2);
 
 
-            Console.WriteLine("Part one: {0, 10:0}", minRes);
+            Console.WriteLine("Part one: {0, 10:0}", nIV);
         }
 
         private static int GetNextPair(int n, out string s)
@@ -106,7 +102,8 @@
             if (sIV.Length != 14)
                 return -1;
 
-            long Inputvariable;
+            long Inputvariable = -1;
+            long BestInputvariable = -1;
             long resOne = 1;
             int nQuestionMark = sIV.Count(s => s.Equals('?'));
             long X = (long)Math.Pow(10, nQuestionMark) - 1;
@@ -116,6 +113,7 @@
             while (resOne != 0 && X >= Xlimit)
             //while (resOne != 0 && X <= 9999999)
             {
+
                 Inputvariable = GetModelNumber(sIV, X);
                 if (Inputvariable != -1)
                 {
@@ -128,13 +126,14 @@
                     {
                         Console.WriteLine("Inputvariable = {0}       Res = {1}", Inputvariable, resOne);
                         minRes = resOne;
+                        BestInputvariable = Inputvariable;
                     }
                 }
                 X--;
                 //X++;
             }
 
-            return minRes;
+            return BestInputvariable;
         }
 
         private static long GetModelNumber(string sIV, long X)
@@ -299,14 +298,20 @@
         {
 
             variableIndex++;
-            //switch (variableIndex)
-            //{
 
-            //    case 1: return -Koeff[variableIndex-1].C;
-            //    case 2: return -Koeff[variableIndex-1].C;
-            //    case 3: return -Koeff[variableIndex-1].C;
+            if(bFinalRound == false)
+            switch (variableIndex)
+            {
 
-            //}
+                case  1: return -Koeff[variableIndex - 1].C;
+                //case  2: return -Koeff[variableIndex - 1].C;
+                //case  3: return -Koeff[variableIndex - 1].C;
+
+                //case 12: return -Koeff[variableIndex - 1].C;
+                //case 13: return -Koeff[variableIndex - 1].C;
+                case 14: return -Koeff[variableIndex - 1].C;
+
+            }
 
 
 
