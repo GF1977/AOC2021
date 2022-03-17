@@ -28,26 +28,36 @@
         }
         private static long  SolveThePuzzle(string sIV)
         {
-            long Inputvariable, bestInput = -1;
-            long resOne = 1;
+            if (sIV.Length != 14)
+                return -1;
+
+            long Inputvariable = -1;
+            long BestInputvariable = -1;
             int nQuestionMark = sIV.Count(s => s.Equals('?'));
             long X = (long)Math.Pow(10, nQuestionMark) - 1;
             long Xlimit = (X + 1) / 10;
+            long minRes = long.MaxValue;
 
             while (X >= Xlimit)
             {
+
                 Inputvariable = GetModelNumber(sIV, X);
                 if (Inputvariable != -1)
                 {
-                    resOne = ProcessCommands(Inputvariable);
+                    long resOne = ProcessCommands(Inputvariable);
                     if (resOne == 0)
                         return Inputvariable;
 
-                    bestInput = Inputvariable;
+                    if (resOne < minRes)
+                    {
+                        minRes = resOne;
+                        BestInputvariable = Inputvariable;
+                    }
                 }
                 X--;
             }
-            return bestInput;
+
+            return BestInputvariable;
         }
 
         // Replace wild cards by numbers. X=13 : sIV "?2?4" => "1234"
