@@ -3,11 +3,9 @@
     public class Program
     {
         // Answers for Data_p.txt   Part 1: 29991993698469      Part 2: 14691271141118
-        // pIO                      Part 1: 96918996924991      Part 2:
-        static readonly string filePath = @".\..\..\..\Data_pIO.txt";
-        static List<(int A, int B, int C)> Koeff = new List<(int A, int B, int C)>();
-        static long[] wxyz = {0,0,0,0};
-        static int variableIndex = 0;
+        // Answers for Data_pIO.txt Part 1: 96918996924991      Part 2:
+        static readonly string filePath = @".\..\..\..\Data_p.txt";
+        static List<(int A, int B, int C)> Koef = new List<(int A, int B, int C)>();
         static bool bFinalRound = false;
         public static void Main(string[] args)
         {
@@ -18,51 +16,38 @@
             Console.WriteLine("Started Round A: {0}", sIV);
             long nIV = SolveThePuzzle(sIV);
 
-            sIV = "???" + nIV.ToString().Substring(3, 8) + "???";
-            bFinalRound = true;
+            if (nIV >= 0)
+            {
+                sIV = "???" + nIV.ToString().Substring(3, 8) + "???";
+                bFinalRound = true;
 
-            Console.WriteLine("Started Round A: {0}", sIV);
-            nIV = SolveThePuzzle(sIV);
+                Console.WriteLine("Started Round A: {0}", sIV);
+                nIV = SolveThePuzzle(sIV);
+            }
             Console.WriteLine("Part one: {0, 10:0}", nIV);
         }
         private static long  SolveThePuzzle(string sIV)
         {
-            if (sIV.Length != 14)
-                return -1;
-
-            long Inputvariable = -1;
-            long BestInputvariable = -1;
+            long Inputvariable, bestInput = -1;
             long resOne = 1;
             int nQuestionMark = sIV.Count(s => s.Equals('?'));
             long X = (long)Math.Pow(10, nQuestionMark) - 1;
             long Xlimit = (X + 1) / 10;
-            long minRes = long.MaxValue;
 
-            while (resOne != 0 && X >= Xlimit)
+            while (X >= Xlimit)
             {
-
                 Inputvariable = GetModelNumber(sIV, X);
                 if (Inputvariable != -1)
                 {
-                    variableIndex = 0;
-                    wxyz[0] = wxyz[1] = wxyz[2] = wxyz[3] = 0;
-
                     resOne = ProcessCommands(Inputvariable);
                     if (resOne == 0)
                         return Inputvariable;
 
-                    if (resOne < minRes && resOne >= 0)
-                    //if (resOne == 0)
-                    {
-                        minRes = resOne;
-                        BestInputvariable = Inputvariable;
-                    }
+                    bestInput = Inputvariable;
                 }
                 X--;
-                //X++;
             }
-
-            return BestInputvariable;
+            return bestInput;
         }
 
         // Replace wild cards by numbers. X=13 : sIV "?2?4" => "1234"
@@ -86,59 +71,60 @@
             }
             return long.Parse(s);
         }
-
+        // the logic of single block of 18 commands
         private static long ProcessCommands(long Inputvariable)
         {
-            Dictionary<int, char> OptionsTMP = new Dictionary<int, char>();
-            foreach (var X in Koeff)
+            long prevZ = 0;
+            int variableIndex = 0;
+
+            foreach (var K in Koef)
             {
-                long w = ReadNextVariable(Inputvariable);
-                long z = wxyz[3] / X.A;
-                if ((wxyz[3] % 26 + X.B) != w)
-                {
-                    z = z * 26 + w + X.C;
-                }
-                wxyz[3] = z;
+                long w = ReadNextVariable(Inputvariable, variableIndex);
+                long z = prevZ / K.A;
+                long x = prevZ % 26 + K.B;
+                if (x != w)
+                    z = z * 26 + w + K.C;
+
+                prevZ = z;
+                variableIndex++;
             }
 
-            return wxyz[3];
+            return prevZ;
         }
-        private static int ReadNextVariable(long Inputvariable)
+        private static int ReadNextVariable(long Inputvariable, int variableIndex)
         {
-            variableIndex++;
-
-            if(bFinalRound == false && (variableIndex == 1 || variableIndex == 14))
-                return -Koeff[variableIndex - 1].C;
-
-            string sVariable = Inputvariable.ToString();
-            int nRes = int.Parse(sVariable[variableIndex-1].ToString());
-            
+            int nRes;
+            // it's a trick, if we make W = -Koef.C, the Z will be 0
+            // in this case we just replace first and last,
+            if (bFinalRound == false && (variableIndex == 0 || variableIndex == 13))
+                nRes = -Koef[variableIndex].C;
+            else
+            {
+                string sVariable = Inputvariable.ToString();
+                nRes = int.Parse(sVariable[variableIndex].ToString());
+            }
             return nRes;
         }
+        // the input is 14 iterations of the block of the 18 commands
+        // only 3 koeficient are unique in each block (line 4,5,15)
         private static void ParsingInputData()
         {
-            (int A, int B, int C) KoeffTMP = (0, 0, 0);
+            (int A, int B, int C) KoefTMP = (0, 0, 0);
             int n = 0;
             using (StreamReader file = new(filePath))
                 while (!file.EndOfStream)
                 {
                     string[] s = file.ReadLine().Split(" ");
 
-                    if (n == 4)
-                        KoeffTMP.A = int.Parse(s[2]);
-
-                    if (n == 5)
-                        KoeffTMP.B = int.Parse(s[2]);
-
-                    if (n == 15)
-                        KoeffTMP.C = int.Parse(s[2]);
+                    if (n == 4)     KoefTMP.A = int.Parse(s[2]); // div z ?
+                    if (n == 5)     KoefTMP.B = int.Parse(s[2]); // add x ?
+                    if (n == 15)    KoefTMP.C = int.Parse(s[2]); // add y ?
 
                     n++;
-
                     if (n == 18)
                     {
                         n = 0;
-                        Koeff.Add(KoeffTMP);
+                        Koef.Add(KoefTMP);
                     }
                 }
         }
