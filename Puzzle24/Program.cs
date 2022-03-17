@@ -7,26 +7,32 @@
         static readonly string filePath = @".\..\..\..\Data_p.txt";
         static List<(int A, int B, int C)> Koef = new List<(int A, int B, int C)>();
         static bool bFinalRound = false;
+        static List<long> Options = new List<long>();
         public static void Main(string[] args)
         {
            
             ParsingInputData();
             string sIV = "999????????999";
+            //string sIV = "111????????111";
             Console.WriteLine("Part One");
             Console.WriteLine("Started Round A: {0}", sIV);
-            long nIV = SolveThePuzzle(sIV);
+            long nIV = SolveThePuzzle(sIV, "max");
 
             if (nIV >= 0)
             {
-                sIV = "???" + nIV.ToString().Substring(3, 8) + "???";
-                bFinalRound = true;
+                //foreach (long A in Options)
+                {
+                    //nIV = A;
+                    sIV = "???" + nIV.ToString().Substring(3, 8) + "???";
+                    bFinalRound = true;
 
-                Console.WriteLine("Started Round A: {0}", sIV);
-                nIV = SolveThePuzzle(sIV);
+                    Console.WriteLine("Started Round B: {0}", sIV);
+                    nIV = SolveThePuzzle(sIV, "max");
+                }
             }
             Console.WriteLine("Part one: {0, 10:0}", nIV);
         }
-        private static long  SolveThePuzzle(string sIV)
+        private static long  SolveThePuzzle(string sIV, string MaxOrMin)
         {
             if (sIV.Length != 14)
                 return -1;
@@ -35,10 +41,31 @@
             long BestInputvariable = -1;
             int nQuestionMark = sIV.Count(s => s.Equals('?'));
             long X = (long)Math.Pow(10, nQuestionMark) - 1;
-            long Xlimit = (X + 1) / 10;
+            long Xlimit;// = (X + 1) / 10;
             long minRes = long.MaxValue;
+            int Xdelta = -1;
 
-            while (X >= Xlimit)
+            if (MaxOrMin == "max")
+            {
+                X = (long)Math.Pow(10, nQuestionMark) - 1;
+                Xlimit = (X + 1) / 10;
+            }
+            else
+            {
+                Xdelta = 1;
+                if (bFinalRound)
+                {
+                    X = 111111;
+                    Xlimit = 999999;
+                }
+                else
+                {
+                    X = 11111111;
+                    Xlimit = 99999999;
+                }
+            }
+
+            while (X != Xlimit)
             {
 
                 Inputvariable = GetModelNumber(sIV, X);
@@ -46,16 +73,23 @@
                 {
                     long resOne = ProcessCommands(Inputvariable);
                     if (resOne == 0)
+                        //if(!bFinalRound)
+                          //  Options.Add(Inputvariable);
                         return Inputvariable;
 
                     if (resOne < minRes)
                     {
                         minRes = resOne;
                         BestInputvariable = Inputvariable;
+                        //if (!bFinalRound && resOne < 4000)
+                        //    Options.Add(BestInputvariable);
+                        //Console.WriteLine("BestInputvariable: {0}  minRes: {1} ", BestInputvariable, minRes);
                     }
                 }
-                X--;
+                X+=Xdelta;
             }
+
+            Console.WriteLine("Best minRes = {0}", minRes);
 
             return BestInputvariable;
         }
@@ -106,8 +140,9 @@
             int nRes;
             // it's a trick, if we make W = -Koef.C, the Z will be 0
             // in this case we just replace first and last,
-            if (bFinalRound == false && (variableIndex == 0 || variableIndex == 13))
+            if (bFinalRound == false && (variableIndex < 1 || variableIndex > 12))
                 nRes = -Koef[variableIndex].C;
+                //nRes = Koef[variableIndex].B;
             else
             {
                 string sVariable = Inputvariable.ToString();
