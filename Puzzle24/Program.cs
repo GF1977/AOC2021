@@ -4,38 +4,70 @@
     {
         // Answers for Data_p.txt   Part 1: 29991993698469      Part 2: 14691271141118
         // Answers for Data_pIO.txt Part 1: 96918996924991      Part 2:
-        static readonly string filePath = @".\..\..\..\Data_p.txt";
-        static List<(int A, int B, int C)> Koef = new List<(int A, int B, int C)>();
+        static readonly string filePath = @".\..\..\..\Data_pIO.txt";
+        static List<(int A, int B, int C)> Koef = new List<(int , int , int)>();
+        static Dictionary<long, string> Options = new Dictionary<long, string>();
         static bool bFinalRound = false;
-        static List<long> Options = new List<long>();
         public static void Main(string[] args)
         {
            
             ParsingInputData();
-            string sIV = "999????????999";
-            //string sIV = "111????????111";
+            //string sIV = "999????????999";
+            //string sIV = "????9??9?99999";
+            //  string sIV = "111????????111";
+            string sIV = "???????";
+            string mode = "min";
             Console.WriteLine("Part One");
             Console.WriteLine("Started Round A: {0}", sIV);
-            long nIV = SolveThePuzzle(sIV, "max");
+            long nIV = SolveThePuzzle(sIV, mode);
 
-            if (nIV >= 0)
+            //if (nIV >= 0)
+            Dictionary<long, string> Options2 = new Dictionary<long, string>();
+            foreach (var k in Options)
+                Options2.Add(k.Key, k.Value);
+
+            Options.Clear();
+
+            foreach (var k in Options2)
             {
-                //foreach (long A in Options)
-                {
-                    //nIV = A;
-                    sIV = "???" + nIV.ToString().Substring(3, 8) + "???";
-                    bFinalRound = true;
 
-                    Console.WriteLine("Started Round B: {0}", sIV);
-                    nIV = SolveThePuzzle(sIV, "max");
-                }
+                //sIV = "???" + nIV.ToString().Substring(3, 8) + "???";
+                sIV = k.Value + "???";
+                    //bFinalRound = true;
+
+                   // Console.WriteLine("Started Round B: {0}", sIV);
+                    nIV = SolveThePuzzle(sIV, mode);
+
             }
-            Console.WriteLine("Part one: {0, 10:0}", nIV);
+
+            Options2.Clear();
+            foreach (var k in Options)
+                Options2.Add(k.Key, k.Value);
+
+            Options.Clear();
+
+            foreach (var k in Options2)
+            {
+
+                //sIV = "???" + nIV.ToString().Substring(3, 8) + "???";
+                sIV = k.Value + "????";
+                //bFinalRound = true;
+
+                // Console.WriteLine("Started Round B: {0}", sIV);
+                nIV = SolveThePuzzle(sIV, mode);
+
+            }
+
+
+
+
+
+            Console.WriteLine("Part one: {0, 10:0}", Options[0]);
         }
         private static long  SolveThePuzzle(string sIV, string MaxOrMin)
         {
-            if (sIV.Length != 14)
-                return -1;
+            //if (sIV.Length != 14)
+            //    return -1;
 
             long Inputvariable = -1;
             long BestInputvariable = -1;
@@ -43,6 +75,7 @@
             long X = (long)Math.Pow(10, nQuestionMark) - 1;
             long Xlimit;// = (X + 1) / 10;
             long minRes = long.MaxValue;
+            long maxRes = 0;
             int Xdelta = -1;
 
             if (MaxOrMin == "max")
@@ -53,16 +86,11 @@
             else
             {
                 Xdelta = 1;
-                if (bFinalRound)
-                {
-                    X = 111111;
-                    Xlimit = 999999;
-                }
-                else
-                {
-                    X = 11111111;
-                    Xlimit = 99999999;
-                }
+                string sX = new string("").PadRight(nQuestionMark, '1');
+                string sXlimit = new string("").PadRight(nQuestionMark, '9');
+                X = long.Parse(sX);
+                Xlimit = long.Parse(sXlimit);
+
             }
 
             while (X != Xlimit)
@@ -71,7 +99,7 @@
                 Inputvariable = GetModelNumber(sIV, X);
                 if (Inputvariable != -1)
                 {
-                    long resOne = ProcessCommands(Inputvariable);
+                    long resOne = ProcessCommands(Inputvariable.ToString());
                     if (resOne == 0)
                         //if(!bFinalRound)
                           //  Options.Add(Inputvariable);
@@ -85,11 +113,17 @@
                         //    Options.Add(BestInputvariable);
                         //Console.WriteLine("BestInputvariable: {0}  minRes: {1} ", BestInputvariable, minRes);
                     }
+
+                    //if(resOne > maxRes)
+                    //{
+                    //    Console.WriteLine("Inputvariable: {0}  maxRes: {1} ", Inputvariable, resOne);
+                    //    maxRes = resOne;
+                    //}
                 }
                 X+=Xdelta;
             }
 
-            Console.WriteLine("Best minRes = {0}", minRes);
+            //Console.WriteLine("Best minRes = {0}", minRes);
 
             return BestInputvariable;
         }
@@ -116,34 +150,63 @@
             return long.Parse(s);
         }
         // the logic of single block of 18 commands
-        private static long ProcessCommands(long Inputvariable)
+        private static long ProcessCommands(string Inputvariable)
         {
             long prevZ = 0;
             int variableIndex = 0;
 
+            long altPrevZ = 0;
+            long altZ;
+
+            bool isGood = true;
+
             foreach (var K in Koef)
             {
-                long w = ReadNextVariable(Inputvariable, variableIndex);
+                if (variableIndex >= Inputvariable.Length)
+                    break;
+
+                //long w = ReadNextVariable(Inputvariable, variableIndex);
+                long w = long.Parse(Inputvariable[variableIndex].ToString());
+
+
+                if (K.A == 26)
+                    altZ = altPrevZ / 26;
+                else
+                    altZ = altPrevZ * 26 + w + K.C;
+
+
+                altPrevZ = altZ;
+
                 long z = prevZ / K.A;
                 long x = prevZ % 26 + K.B;
-                if (x != w)
-                    z = z * 26 + w + K.C;
+
+               // if (bFinalRound == true || K.A == 1 )
+                    if (x != w)
+                        z = z * 26 + w + K.C;
 
                 prevZ = z;
+
+                if(prevZ != altPrevZ)
+                    isGood = false;
+
                 variableIndex++;
             }
 
+            if (isGood)
+                Options.TryAdd(prevZ, Inputvariable);
+
             return prevZ;
         }
-        private static int ReadNextVariable(long Inputvariable, int variableIndex)
+        private static int ReadNextVariable(string Inputvariable, int variableIndex)
         {
             int nRes;
             // it's a trick, if we make W = -Koef.C, the Z will be 0
             // in this case we just replace first and last,
-            if (bFinalRound == false && (variableIndex < 1 || variableIndex > 12))
-                nRes = -Koef[variableIndex].C;
-                //nRes = Koef[variableIndex].B;
-            else
+
+            //if (bFinalRound == false && (variableIndex == 0 || variableIndex == 13))
+            //    nRes = -Koef[variableIndex].C;
+            ////nRes = Koef[variableIndex].B;
+            //else
             {
                 string sVariable = Inputvariable.ToString();
                 nRes = int.Parse(sVariable[variableIndex].ToString());
