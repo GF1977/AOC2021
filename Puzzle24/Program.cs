@@ -4,21 +4,33 @@
     {
         // Answers for Data_p.txt   Part 1: 29991993698469      Part 2: 14691271141118
         // Answers for Data_pIO.txt Part 1: 96918996924991      Part 2: 91811241911641
-        static readonly string filePath = @".\..\..\..\Data_p.txt";
+
         static List<(int A, int B, int C)> Koef = new List<(int , int , int)>();
         static Dictionary<long, string> Options = new Dictionary<long, string>();
-        static bool bFinalRound = false;
         public static void Main(string[] args)
         {
            
-            ParsingInputData();
-            string sIV = "???????";
-            char mode = '9';
-            Console.WriteLine("Part One");
-            Console.WriteLine("Started Round A: {0}", sIV);
-            
-            SolveThePuzzle(sIV, mode);
+            ParsingInputData(@".\..\..\..\Data_p.txt");
+            SolvePuzzle("max");
+            Console.WriteLine("Part one: {0, 10:0}", Options[0]);
+            SolvePuzzle("min");
+            Console.WriteLine("Part two: {0, 10:0}", Options[0]);
 
+            ParsingInputData(@".\..\..\..\Data_pIO.txt");
+            SolvePuzzle("max");
+            Console.WriteLine("Part one: {0, 10:0}", Options[0]);
+            SolvePuzzle("min");
+            Console.WriteLine("Part two: {0, 10:0}", Options[0]);
+
+        }
+
+        private static void SolvePuzzle(string sPart)
+        {
+            Options.Clear();
+            char MaxOrMin = sPart == "max" ? '9' : '1';
+
+            string sIV = "???????";
+            GetTheOptions(sIV, MaxOrMin);
 
             Dictionary<long, string> Options2 = new Dictionary<long, string>();
             foreach (var k in Options)
@@ -27,7 +39,7 @@
             Options.Clear();
 
             foreach (var k in Options2)
-                SolveThePuzzle(k.Value + "???", mode);
+                GetTheOptions(k.Value + "???", MaxOrMin);
 
 
             Options2.Clear();
@@ -37,50 +49,43 @@
             Options.Clear();
 
             foreach (var k in Options2)
-                SolveThePuzzle(k.Value + "????", mode);
-
-            Console.WriteLine("Part one: {0, 10:0}", Options[0]);
+                GetTheOptions(k.Value + "????", MaxOrMin);
         }
-        private static long  SolveThePuzzle(string sIV, char MaxOrMin)
+
+        private static void  GetTheOptions(string sIV, char MaxOrMin)
         {
             long Inputvariable = -1;
-            long BestInputvariable = -1;
             int nQuestionMark = sIV.Count(s => s.Equals('?'));
 
-            long Xdelta = -1;
-            string sX = new string("").PadRight(nQuestionMark, MaxOrMin);
-            string sXlimit;
-            long X = long.Parse(sX);
-
+            long Xdelta;
+            string sX = String.Empty.PadRight(nQuestionMark, MaxOrMin);
+            string sXlimit = String.Empty;
 
             if (MaxOrMin == '1')
             {
-                sXlimit =  new string("").PadRight(nQuestionMark, '9');
+                sXlimit = sXlimit.PadRight(nQuestionMark, '9');
                 Xdelta = 1;
             }
             else
-                sXlimit =  new string("").PadRight(nQuestionMark, '1');
+            {
+                sXlimit = sXlimit.PadRight(nQuestionMark, '1');
+                Xdelta = -1;
+            }
 
             long Xlimit = long.Parse(sXlimit);
-
+            long X = long.Parse(sX);
 
             while (X != Xlimit)
             {
                 Inputvariable = GetModelNumber(sIV, X);
                 if (Inputvariable != -1)
-                {
-                    long resOne = ProcessCommands(Inputvariable.ToString());
-                    if (resOne == 0)
-                        return Inputvariable;
-
-                    //if (resOne < minRes)
-                    //    BestInputvariable = Inputvariable;
-
-                }
+                    if (ProcessCommands(Inputvariable.ToString()) == 0)
+                        //return Inputvariable;
+                        break;
+    
                 X+=Xdelta;
             }
-
-            return Inputvariable;
+            //return Inputvariable;
         }
 
         // Replace wild cards by numbers. X=13 : sIV "?2?4" => "1234"
@@ -109,10 +114,6 @@
         {
             long prevZ = 0;
             int variableIndex = 0;
-
-            long altPrevZ = 0;
-            long altZ;
-
             bool isGood = true;
 
             foreach (var K in Koef)
@@ -121,25 +122,15 @@
                     break;
 
                 long w = long.Parse(Inputvariable[variableIndex].ToString());
-
-
-                if (K.A == 26)
-                    altZ = altPrevZ / 26;
-                else
-                    altZ = altPrevZ * 26 + w + K.C;
-
-
-                altPrevZ = altZ;
-
                 long z = prevZ / K.A;
                 long x = prevZ % 26 + K.B;
 
-                    if (x != w)
+                if (x != w)
                         z = z * 26 + w + K.C;
 
                 prevZ = z;
 
-                if (prevZ != altPrevZ)
+                if (K.A == 26 & w != x)
                 {
                     isGood = false;
                     break;
@@ -154,10 +145,11 @@
             return prevZ;
         }
 
-        // the input is 14 iterations of the block of the 18 commands
+        // the input is 14 iterations of the blocks of the 18 commands
         // only 3 koeficient are unique in each block (line 4,5,15)
-        private static void ParsingInputData()
+        private static void ParsingInputData(string filePath)
         {
+            Koef.Clear();
             (int A, int B, int C) KoefTMP = (0, 0, 0);
             int n = 0;
             using (StreamReader file = new(filePath))
@@ -165,9 +157,9 @@
                 {
                     string[] s = file.ReadLine().Split(" ");
 
-                    if (n == 4)     KoefTMP.A = int.Parse(s[2]); // div z ?
-                    if (n == 5)     KoefTMP.B = int.Parse(s[2]); // add x ?
-                    if (n == 15)    KoefTMP.C = int.Parse(s[2]); // add y ?
+                    if (n == 4)     KoefTMP.A = int.Parse(s[2]); // div z ?     (line  4,22,40 etc)
+                    if (n == 5)     KoefTMP.B = int.Parse(s[2]); // add x ?     (line  5,23,41 etc)
+                    if (n == 15)    KoefTMP.C = int.Parse(s[2]); // add y ?     (line 15,33,51 etc)
 
                     n++;
                     if (n == 18)
