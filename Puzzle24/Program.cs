@@ -1,4 +1,5 @@
-﻿namespace MyApp
+﻿using System.Diagnostics;
+namespace MyApp
 {
     public class Program
     {
@@ -9,47 +10,40 @@
         static Dictionary<long, string> Options = new Dictionary<long, string>();
         public static void Main(string[] args)
         {
-           
+
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             ParsingInputData(@".\..\..\..\Data_p.txt");
-            SolvePuzzle("max");
-            Console.WriteLine("Part one: {0, 10:0}", Options[0]);
-            SolvePuzzle("min");
-            Console.WriteLine("Part two: {0, 10:0}", Options[0]);
+            Console.WriteLine("Part one: {0, 10:0}", SolvePuzzle("max"));
+            Console.WriteLine("Part two: {0, 10:0}", SolvePuzzle("min"));
 
             ParsingInputData(@".\..\..\..\Data_pIO.txt");
-            SolvePuzzle("max");
-            Console.WriteLine("Part one: {0, 10:0}", Options[0]);
-            SolvePuzzle("min");
-            Console.WriteLine("Part two: {0, 10:0}", Options[0]);
+            Console.WriteLine("Part one: {0, 10:0}", SolvePuzzle("max"));
+            Console.WriteLine("Part two: {0, 10:0}", SolvePuzzle("min"));
 
+            Console.WriteLine("Total time {0,8:0.000} Seconds", stopwatch.ElapsedMilliseconds / 1000.0);
         }
 
-        private static void SolvePuzzle(string sPart)
+        private static string SolvePuzzle(string sPart)
         {
             Options.Clear();
             char MaxOrMin = sPart == "max" ? '9' : '1';
 
-            string sIV = "???????";
-            GetTheOptions(sIV, MaxOrMin);
+            Dictionary<long, string> Options2 = new Dictionary<long, string>() { { 0, "??" } };
 
-            Dictionary<long, string> Options2 = new Dictionary<long, string>();
-            foreach (var k in Options)
-                Options2.Add(k.Key, k.Value);
+            for (int i = 0; i < 6; i++)
+            {
+                Options.Clear();
+                foreach (var k in Options2)
+                    GetTheOptions(k.Value + "??", MaxOrMin);
 
-            Options.Clear();
+                Options2.Clear();
+                foreach (var k in Options)
+                    Options2.Add(k.Key, k.Value);
+            }
 
-            foreach (var k in Options2)
-                GetTheOptions(k.Value + "???", MaxOrMin);
-
-
-            Options2.Clear();
-            foreach (var k in Options)
-                Options2.Add(k.Key, k.Value);
-
-            Options.Clear();
-
-            foreach (var k in Options2)
-                GetTheOptions(k.Value + "????", MaxOrMin);
+            return Options2.First().Value;
         }
 
         private static void  GetTheOptions(string sIV, char MaxOrMin)
@@ -79,13 +73,13 @@
             {
                 Inputvariable = GetModelNumber(sIV, X);
                 if (Inputvariable != -1)
-                    if (ProcessCommands(Inputvariable.ToString()) == 0)
-                        //return Inputvariable;
-                        break;
-    
+                {
+                    long l = ProcessCommands(Inputvariable.ToString());
+                    if (l >= 0)
+                        Options.TryAdd(l, Inputvariable.ToString());
+                }
                 X+=Xdelta;
             }
-            //return Inputvariable;
         }
 
         // Replace wild cards by numbers. X=13 : sIV "?2?4" => "1234"
@@ -114,7 +108,6 @@
         {
             long prevZ = 0;
             int variableIndex = 0;
-            bool isGood = true;
 
             foreach (var K in Koef)
             {
@@ -131,17 +124,10 @@
                 prevZ = z;
 
                 if (K.A == 26 & w != x)
-                {
-                    isGood = false;
-                    break;
-                }
+                    return -1;
 
                 variableIndex++;
             }
-
-            if (isGood)
-                Options.TryAdd(prevZ, Inputvariable);
-
             return prevZ;
         }
 
