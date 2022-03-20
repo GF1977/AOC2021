@@ -18,8 +18,8 @@
 
             while (bMoved)
             {
-                bMoved = MoveCucumbersE("East");
-                bool b = MoveCucumbersS("South");
+                bMoved = MoveCucumbers("East");
+                bool b = MoveCucumbers("South");
                 bMoved = bMoved || b;
                 nSteps++;
             } 
@@ -37,69 +37,66 @@
                     else
                         FreeSlots[y, x] = false;
 
-                    if (map[y, x] == 'E') map[y, x] = '>';
-                    if (map[y, x] == 'S') map[y, x] = 'v';
+                    if (map[y, x] == 'E') 
+                        map[y, x] = '>';
+
+                    if (map[y, x] == 'S') 
+                        map[y, x] = 'v';
                 }
         }
-        private static bool MoveCucumbersE(string v)
+        private static bool MoveCucumbers(string v)
         {
             CheckFreeSlots();
             bool bMoved = false;
+            int nLimit, xy, xEdge, yEdge;
+            char nType, nTypeOccupied;
+            (int dY, int dX) Delta;
 
             for (int y = 0; y < Y; y++)
                 for (int x = 0; x < X; x++)
                 {
-                    if (map[y, x] == '>')
-                        if (x < X - 1)
+                    if (v == "East")
+                    {
+                        nLimit = X - 1;
+                        nType = '>';
+                        nTypeOccupied = 'E';
+                        xy = x;
+                        xEdge = 0;
+                        yEdge = y;
+                        Delta = (0, 1);
+                    }
+                    else
+                    {
+                        nLimit = Y - 1;
+                        nType = 'v';
+                        nTypeOccupied = 'S';
+                        xy = y;
+                        xEdge = x;
+                        yEdge = 0;
+                        Delta = (1, 0);
+                    }
+
+                    if (map[y, x] == nType)
+                        if (xy < nLimit)
                         {
-                            if (FreeSlots[y,x+1])
+                            if (FreeSlots[y + Delta.dY,x + Delta.dX])
                             {
                                 map[y, x] = '.';
-                                map[y, x+1] = 'E';
+                                map[y+Delta.dY, x+Delta.dX] = nTypeOccupied;
                                 bMoved = true;
                             }
                         }
                         else
                         {
-                            if (FreeSlots[y,0])
+                            if (FreeSlots[yEdge, xEdge])
                             {
                                 map[y, x] = '.';
-                                map[y, 0] = 'E';
+                                map[yEdge, xEdge] = nTypeOccupied;
                                 bMoved = true;
                             }
                         }
                 }
            return bMoved ;
-        }
-        private static bool MoveCucumbersS(string v)
-        {
-            CheckFreeSlots();
-            bool bMoved = false;
-
-            for (int y = 0; y < Y; y++)
-                for (int x = 0; x < X; x++)
-                {
-                    if (map[y, x] == 'v')
-                        if (y < Y - 1)
-                        {
-                            if (FreeSlots[y+1,x])
-                            {
-                                map[y, x] = '.';
-                                map[y+1, x] = 'S';
-                                bMoved = true;
-                            }
-                        }
-                        else
-                        {
-                             if (FreeSlots[0,x])
-                             {
-                                map[y, x] = '.';
-                                map[0, x] = 'S';
-                                bMoved = true;
-                            }
-                        }
-                }
-            return bMoved;
         }
         private static void ParsingInputData(string filePath)
         {
